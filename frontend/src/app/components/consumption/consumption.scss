@@ -1,0 +1,55 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--rule);
+  margin-bottom: var(--space-3);
+}
+
+.toggle {
+  display: inline-flex;
+  border: var(--rule-strong);
+
+  button {
+    border: 0;
+    background: var(--color-white);
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+
+    &[aria-pressed='true'] {
+      background: var(--color-navy);
+      color: var(--color-white);
+    }
+  }
+}
+
+label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+input[type='date'] {
+  border: var(--rule);
+  border-bottom: var(--rule-strong);
+  background: var(--color-white);
+  padding: var(--space-1) var(--space-2);
+}
+
+.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--color-blue);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.notice {
+  padding: var(--space-5) 0;
+  color: var(--color-text-secondary);
+}

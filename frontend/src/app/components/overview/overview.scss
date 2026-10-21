@@ -1,0 +1,33 @@
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+}
+
+.kpi {
+  border-top: var(--rule-strong);
+  padding-top: var(--space-2);
+}
+
+dt {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+dd {
+  margin: 0;
+}
+
+.value {
+  font-family: var(--font-title);
+  font-size: 2.25rem;
+  line-height: 1.2;
+  margin-top: var(--space-1);
+}
+
+.detail {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  margin-top: var(--space-1);
+}

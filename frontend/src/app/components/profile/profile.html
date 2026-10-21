@@ -1,0 +1,9 @@
+<app-view-header
+  [title]="title()"
+  subtitle="Puissance moyenne par heure locale, en semaine (trait plein) et le week-end (trait pointillé)."
+/>
+<app-chart
+  [options]="options()"
+  description="Courbes de la puissance moyenne en kW selon l'heure de la journée, en semaine et le week-end"
+/>
+<p class="footnote">{{ footnote() }}</p>

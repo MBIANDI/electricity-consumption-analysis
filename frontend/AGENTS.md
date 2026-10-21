@@ -18,7 +18,7 @@ only services talk to the API. Interfaces in `models/` mirror the API schema.
 - TypeScript strict mode; no `any`.
 - Use the path aliases from `tsconfig.json`; reuse `core`/`shared` before adding
   new abstractions.
-- Use one charting library only: <name it>.
+- Use one charting library only: Apache ECharts via `ngx-echarts` (wrapped by `components/shared/chart.ts`).
 - Timestamps arrive in UTC; display them in Europe/Paris. Always show units (kWh, kW).
 - Every chart handles loading, error and empty states.
 - Formatting follows `.editorconfig` (2 spaces, LF, max 120 columns).

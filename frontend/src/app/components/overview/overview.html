@@ -1,0 +1,11 @@
+<app-view-header [title]="title()" />
+<dl class="kpis">
+  @for (kpi of kpis(); track kpi.label) {
+    <div class="kpi">
+      <dt>{{ kpi.label }}</dt>
+      <dd class="value">{{ kpi.value }}</dd>
+      <dd class="detail">{{ kpi.detail }}</dd>
+    </div>
+  }
+</dl>
+<p class="footnote">{{ footnote() }}</p>
