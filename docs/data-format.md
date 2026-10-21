@@ -38,3 +38,7 @@ gitignored, never modified). Figures below come from a one-off inspection script
 2. Time is read from `timestamp_utc`; local days use Europe/Paris (CEST to CET switch on
    2026-10-25 is after the data ends, but handled and tested).
 3. Gaps are reported, never interpolated: missing minutes contribute no energy.
+4. Period shown in the footnote is derived from `source.period_start_utc` / `period_end_utc` in
+   Europe/Paris. The file name uses UTC dates (`..._20261014`), but its last minute is
+   2026-10-14T22:59Z, i.e. 00:59 on 15 Oct in Paris (CEST), so the footnote ends on 15 Oct and the
+   daily charts end with a 60-minute partial day. This is a UTC-to-local effect, not extra data.

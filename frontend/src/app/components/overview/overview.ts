@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { DashboardData } from '@models/dashboard';
 import { formatDateTime, formatKw, formatKwh, formatPercent, formatWatts } from '@services/format';
 import { overviewTitle, sourceFootnote } from '@services/insights';
+import { UI } from '@services/ui-strings';
 import { ViewHeader } from '../shared/view-header';
 
 interface Kpi {
@@ -25,31 +26,32 @@ export class Overview {
 
   protected readonly kpis = computed<Kpi[]>(() => {
     const { summary, quality } = this.data();
+    const { overview } = UI;
     return [
       {
-        label: 'Énergie totale',
+        label: overview.totalEnergy,
         value: formatKwh(summary.total_energy_kwh, 0),
-        detail: 'Somme des trois phases, minutes mesurées uniquement',
+        detail: overview.totalEnergyDetail,
       },
       {
-        label: 'Moyenne journalière',
+        label: overview.dailyAverage,
         value: formatKwh(summary.average_daily_energy_kwh),
-        detail: `Sur ${summary.complete_days} jours complets`,
+        detail: overview.dailyAverageDetail(summary.complete_days),
       },
       {
-        label: 'Puissance de pointe',
+        label: overview.peakPower,
         value: formatKw(summary.peak.power_kw, 2),
         detail: formatDateTime(summary.peak.timestamp_local),
       },
       {
-        label: 'Puissance de base',
+        label: overview.baseLoad,
         value: formatWatts(summary.base_load_w),
-        detail: '5e centile de la puissance par minute',
+        detail: overview.baseLoadDetail,
       },
       {
-        label: 'Couverture des données',
+        label: overview.coverage,
         value: formatPercent(quality.coverage_pct),
-        detail: `${quality.gaps.length} interruptions de plus de ${quality.gap_threshold_minutes} min`,
+        detail: overview.coverageDetail(quality.gaps.length, quality.gap_threshold_minutes),
       },
     ];
   });

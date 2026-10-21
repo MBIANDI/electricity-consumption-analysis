@@ -1,3 +1,5 @@
+import { formatNumber } from '@services/format';
+
 /**
  * ECharts theme. Canvas rendering cannot read CSS custom properties, so the palette is mirrored
  * here from `styles/_tokens.scss`. This is the only TypeScript file allowed to hold hex values.
@@ -7,7 +9,7 @@ export const CHART_COLORS = {
   navy: '#051C2C',
   blue: '#2251FF',
   blueMid: '#6485FF',
-  textSecondary: '#5F6B76',
+  textSecondary: '#4F5B66',
   grid: '#D5DAE0',
   white: '#FFFFFF',
 } as const;
@@ -30,7 +32,7 @@ export const VALUE_AXIS_STYLE = {
   axisLine: { show: false },
   axisTick: { show: false },
   splitLine: { lineStyle: { color: CHART_COLORS.grid, width: 1 } },
-  axisLabel: AXIS_LABEL,
+  axisLabel: { ...AXIS_LABEL, formatter: (value: number): string => formatNumber(value) },
   ...AXIS_NAME,
 };
 
@@ -47,5 +49,5 @@ export const TOOLTIP_STYLE = {
   borderColor: CHART_COLORS.grid,
   borderWidth: 1,
   textStyle: { color: CHART_COLORS.navy, fontFamily: CHART_FONT, fontSize: 13 },
-  extraCssText: 'box-shadow: none; border-radius: 0;',
+  extraCssText: 'box-shadow: none; border-radius: 4px;',
 };

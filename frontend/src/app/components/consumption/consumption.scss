@@ -3,9 +3,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3) var(--space-4);
-  padding-bottom: var(--space-3);
-  border-bottom: var(--rule);
-  margin-bottom: var(--space-3);
+  padding: var(--space-3) var(--space-4);
 }
 
 .toggle {

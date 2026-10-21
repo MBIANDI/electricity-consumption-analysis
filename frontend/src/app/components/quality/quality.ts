@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { DashboardService } from '@services/dashboard.service';
 import { formatDateTime, formatDuration, formatPercent } from '@services/format';
 import { qualityTitle, sourceFootnote } from '@services/insights';
+import { UI } from '@services/ui-strings';
 import { Chart } from '../shared/chart';
 import { dailyCoverageOptions } from '../shared/chart-options';
 import { ViewHeader } from '../shared/view-header';
@@ -22,6 +23,7 @@ interface GapRow {
 export class Quality {
   protected readonly data = inject(DashboardService).data;
 
+  protected readonly ui = UI.quality;
   protected readonly title = computed(() => qualityTitle(this.data().quality));
   protected readonly coverage = computed(() => formatPercent(this.data().quality.coverage_pct));
   protected readonly coverageWidth = computed(() => `${this.data().quality.coverage_pct}%`);

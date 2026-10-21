@@ -20,6 +20,7 @@ import {
   formatPeriod,
   wattsToKilowatts,
 } from './format';
+import { UI } from './ui-strings';
 
 export function peakOf<T>(points: readonly T[], value: (point: T) => number): T | undefined {
   return points.reduce<T | undefined>(
@@ -51,7 +52,7 @@ export function hourlyConsumptionTitle(hours: readonly HourlyEnergyPoint[]): str
   return `La consommation horaire culmine le ${formatDateTime(peak.start_utc)}, à ${formatKwh(peak.energy_kwh, 2)}.`;
 }
 
-function profilePeak(points: readonly ProfilePoint[]): ProfilePoint | undefined {
+export function profilePeak(points: readonly ProfilePoint[]): ProfilePoint | undefined {
   return peakOf(points, (point) => point.mean_power_w);
 }
 
@@ -64,7 +65,7 @@ export function profileTitle(profile: DailyProfile): string {
   return (
     `En semaine, la consommation culmine à ${formatHour(weekday.hour)}, ` +
     `à ${formatKw(wattsToKilowatts(weekday.mean_power_w))} ; ` +
-    `le week-end, à ${formatHour(weekend.hour)}, ` +
+    `le ${UI.weekend.toLowerCase()}, à ${formatHour(weekend.hour)}, ` +
     `à ${formatKw(wattsToKilowatts(weekend.mean_power_w))}.`
   );
 }

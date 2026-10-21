@@ -2,8 +2,7 @@
 
 export const DISPLAY_TIMEZONE = 'Europe/Paris';
 const LOCALE = 'fr-FR';
-// Narrow and plain no-break spaces, as fr-FR typography expects between a number and its unit.
-const NNBSP = String.fromCharCode(0x202f);
+// No-break space between a number and its unit; Georgia and Arial both have a glyph for it.
 const NBSP = String.fromCharCode(0xa0);
 const MINUTES_PER_HOUR = 60;
 const WATTS_PER_KILOWATT = 1000;
@@ -15,16 +14,21 @@ function number(value: number, fractionDigits: number): string {
   }).format(value);
 }
 
+/** Number in fr-FR, at most two decimals (axis ticks). */
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 2 }).format(value);
+}
+
 export function formatKwh(value: number, fractionDigits = 1): string {
-  return `${number(value, fractionDigits)}${NNBSP}kWh`;
+  return `${number(value, fractionDigits)}${NBSP}kWh`;
 }
 
 export function formatKw(value: number, fractionDigits = 1): string {
-  return `${number(value, fractionDigits)}${NNBSP}kW`;
+  return `${number(value, fractionDigits)}${NBSP}kW`;
 }
 
 export function formatWatts(value: number): string {
-  return `${number(value, 0)}${NNBSP}W`;
+  return `${number(value, 0)}${NBSP}W`;
 }
 
 export function wattsToKilowatts(value: number): number {
@@ -32,22 +36,22 @@ export function wattsToKilowatts(value: number): number {
 }
 
 export function formatPercent(value: number, fractionDigits = 1): string {
-  return `${number(value, fractionDigits)}${NNBSP}%`;
+  return `${number(value, fractionDigits)}${NBSP}%`;
 }
 
 /** `19 h` */
 export function formatHour(hour: number): string {
-  return `${hour}${NNBSP}h`;
+  return `${hour}${NBSP}h`;
 }
 
 /** `20 h 09` or `39 min` */
 export function formatDuration(minutes: number): string {
   if (minutes < MINUTES_PER_HOUR) {
-    return `${minutes}${NNBSP}min`;
+    return `${minutes}${NBSP}min`;
   }
   const hours = Math.floor(minutes / MINUTES_PER_HOUR);
   const rest = String(minutes % MINUTES_PER_HOUR).padStart(2, '0');
-  return `${hours}${NNBSP}h${NBSP}${rest}`;
+  return `${hours}${NBSP}h${NBSP}${rest}`;
 }
 
 /** Local day key `YYYY-MM-DD` of an instant, in Europe/Paris. */

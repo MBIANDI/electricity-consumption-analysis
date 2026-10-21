@@ -13,6 +13,7 @@ import {
   hourlyConsumptionTitle,
   sourceFootnote,
 } from '@services/insights';
+import { UI } from '@services/ui-strings';
 import { Chart } from '../shared/chart';
 import { dailyEnergyOptions, hourlyEnergyOptions } from '../shared/chart-options';
 import { ViewHeader } from '../shared/view-header';
@@ -29,6 +30,7 @@ type Granularity = 'daily' | 'hourly';
 export class Consumption {
   protected readonly data = inject(DashboardService).data;
 
+  protected readonly ui = UI.consumption;
   protected readonly granularity = signal<Granularity>('daily');
 
   protected readonly firstDay = computed(() => this.data().daily[0]?.day ?? '');
@@ -62,9 +64,8 @@ export class Consumption {
       ? dailyEnergyOptions(this.days())
       : hourlyEnergyOptions(this.hours()),
   );
-  protected readonly chartDescription = computed(
-    () =>
-      `Énergie ${this.granularity() === 'daily' ? 'journalière' : 'horaire'} en kWh sur la plage sélectionnée`,
+  protected readonly chartDescription = computed(() =>
+    this.granularity() === 'daily' ? UI.consumption.dailyDescription : UI.consumption.hourlyDescription,
   );
   protected readonly isEmptyRange = computed(() => this.days().length === 0);
   protected readonly footnote = computed(() => sourceFootnote(this.data().source));

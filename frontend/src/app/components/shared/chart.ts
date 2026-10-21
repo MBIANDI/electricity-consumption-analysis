@@ -13,6 +13,7 @@ import { NgxEchartsDirective } from 'ngx-echarts';
     role="img"
     [attr.aria-label]="description()"
     [options]="options()"
+    [style.height]="height()"
     [autoResize]="true"
   ></div>`,
   styles: `
@@ -21,7 +22,6 @@ import { NgxEchartsDirective } from 'ngx-echarts';
     }
     .chart {
       width: 100%;
-      height: 22rem;
     }
   `,
 })
@@ -29,4 +29,6 @@ export class Chart {
   readonly options = input.required<EChartsCoreOption>();
   /** Text alternative that states what the chart shows. */
   readonly description = input.required<string>();
+  /** CSS height of the plot area. */
+  readonly height = input('22rem');
 }

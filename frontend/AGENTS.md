@@ -35,6 +35,21 @@ to `/` and the nav). UI strings live in `services/ui-strings.ts`; route paths an
 - Every chart handles loading, error and empty states.
 - Formatting follows `.editorconfig` (2 spaces, LF, max 120 columns).
 
+## Design rules
+- Page background is light blue (`--color-sky`), set on `html` and `body`. Content sits on white cards
+  (`.card`: 1px border, radius `--radius` = 4px at most, at most the very subtle `--shadow-card`).
+  Content is at most 75rem wide. Do not go back to a white page or to rounded or heavy-shadow cards.
+- Colours live in `styles/_tokens.scss` only. The one exception is `components/shared/chart-theme.ts`
+  (canvas cannot read CSS variables); keep the two in sync. Secondary text must reach AA (4.5:1) on
+  both the sky background and white.
+- Accent blue is for hover, focus and the key insight; never decorative.
+- Georgia headings and KPI values use lining figures (`font-variant-numeric: lining-nums`, set on `body`).
+- A number and its unit are separated by a no-break space (U+00A0), and "week-end" is written with a
+  non-breaking hyphen (U+2011), so titles never split them. Use the helpers in `services/format.ts`
+  and `UI.weekend`.
+- Every number shown (text, axis ticks, tooltips, labels) goes through `Intl` with `fr-FR`.
+- A line style (solid / dashed) never relies on colour alone: show a line sample next to its name.
+
 ## Tests
 - Use the project test runner's APIs only (no mixing frameworks).
 - Fake async with a real async boundary and fake timers; assert exact values.

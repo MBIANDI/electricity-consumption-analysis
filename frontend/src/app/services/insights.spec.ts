@@ -39,7 +39,7 @@ describe('insights', () => {
 
   it('states weekday and weekend peaks of the profile', () => {
     expect(plain(profileTitle(data.daily_profile))).toBe(
-      'En semaine, la consommation culmine à 19 h, à 1,7 kW ; le week-end, à 12 h, à 1,3 kW.',
+      'En semaine, la consommation culmine à 19 h, à 1,7 kW ; le week\u2011end, à 12 h, à 1,3 kW.',
     );
   });
 
@@ -54,5 +54,24 @@ describe('insights', () => {
 
   it('builds the source footnote from the period in Paris time', () => {
     expect(sourceFootnote(data.source)).toBe('Source : compteur Shelly, 1 juin – 2 juin 2026');
+  });
+
+  it('ends the period on the next Paris day when the last minute is after 22:00 UTC (CEST)', () => {
+    const source = {
+      ...data.source,
+      period_start_utc: '2026-08-31T16:33:00Z',
+      period_end_utc: '2026-10-14T22:59:00Z',
+    };
+
+    expect(sourceFootnote(source)).toBe('Source : compteur Shelly, 31 août – 15 oct. 2026');
+  });
+
+  it('never splits "week-end" and keeps a no-break space before units', () => {
+    const title = profileTitle(data.daily_profile);
+
+    expect(title).toContain('week\u2011end');
+    expect(title).not.toContain('week-end');
+    expect(title).toContain('19\u00a0h');
+    expect(title).toContain('1,7\u00a0kW');
   });
 });

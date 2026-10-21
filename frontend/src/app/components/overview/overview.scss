@@ -2,12 +2,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   gap: var(--space-4);
-  margin: 0;
+  margin: 0 0 var(--space-3);
 }
 
 .kpi {
-  border-top: var(--rule-strong);
-  padding-top: var(--space-2);
+  min-width: 0;
 }
 
 dt {

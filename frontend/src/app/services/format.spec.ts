@@ -6,6 +6,7 @@ import {
   formatHour,
   formatKw,
   formatKwh,
+  formatNumber,
   formatPercent,
   formatWatts,
   localDayKey,
@@ -23,6 +24,17 @@ describe('format', () => {
     expect(plain(formatWatts(329.2))).toBe('329 W');
     expect(plain(formatPercent(96.1896))).toBe('96,2 %');
     expect(plain(formatHour(19))).toBe('19 h');
+  });
+
+  it('formats axis ticks with a decimal comma', () => {
+    expect(formatNumber(1.5)).toBe('1,5');
+    expect(formatNumber(2)).toBe('2');
+    expect(formatNumber(0.25)).toBe('0,25');
+  });
+
+  it('puts a no-break space between a number and its unit', () => {
+    expect(formatKw(1.7)).toBe('1,7\u00a0kW');
+    expect(formatHour(6)).toBe('6\u00a0h');
   });
 
   it('converts watts to kilowatts', () => {

@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 @Component({
   selector: 'app-view-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'card' },
   template: `
     <h2 class="title">{{ title() }}</h2>
     @if (subtitle(); as text) {
@@ -13,7 +14,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styles: `
     :host {
       display: block;
-      margin-bottom: var(--space-4);
     }
     .title {
       font-size: 1.75rem;
@@ -21,6 +21,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     }
     .subtitle {
       margin: var(--space-2) 0 0;
+      max-width: 52rem;
       color: var(--color-text-secondary);
     }
   `,

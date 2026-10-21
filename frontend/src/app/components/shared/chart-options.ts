@@ -16,6 +16,7 @@ import {
   wattsToKilowatts,
 } from '@services/format';
 import { peakOf } from '@services/insights';
+import { UI } from '@services/ui-strings';
 import {
   CATEGORY_AXIS_STYLE,
   CHART_COLORS,
@@ -27,11 +28,11 @@ import {
 const GRID = { left: 56, right: 24, top: 32, bottom: 36 };
 const COMPLETE_DAY_COVERAGE_PCT = 95;
 
-function peakLabel(text: string): object {
+function peakLabel(text: string, color: string = CHART_COLORS.blue): object {
   return {
     show: true,
     formatter: text,
-    color: CHART_COLORS.blue,
+    color,
     fontFamily: CHART_FONT,
     fontWeight: 'bold',
     fontSize: 12,
@@ -122,17 +123,54 @@ export function hourlyEnergyOptions(hours: readonly HourlyEnergyPoint[]): EChart
   };
 }
 
-/** Mean power by hour of day. Weekdays are solid navy, weekends dashed blue; no legend. */
+interface ProfileLine {
+  id: string;
+  name: string;
+  color: string;
+  dashed: boolean;
+}
+
+const PROFILE_LINES: readonly ProfileLine[] = [
+  { id: 'weekday', name: UI.weekday, color: CHART_COLORS.navy, dashed: false },
+  { id: 'weekend', name: UI.weekend, color: CHART_COLORS.blue, dashed: true },
+];
+
+/** The part of an ECharts axis-tooltip item that the profile tooltip reads. */
+export interface AxisTooltipItem {
+  axisValue: string;
+  seriesId: string;
+  seriesName: string;
+  value: number | null | undefined;
+}
+
+/** `6 h — Semaine 1,7 kW, Week-end 1,0 kW`; hours without data are left out. */
+export function profileTooltip(items: readonly AxisTooltipItem[]): string {
+  const lines = items.filter(
+    (item) => PROFILE_LINES.some((line) => line.id === item.seriesId) && typeof item.value === 'number',
+  );
+  if (lines.length === 0) {
+    return '';
+  }
+  return `${lines[0].axisValue} — ${lines.map((item) => `${item.seriesName} ${formatKw(item.value as number)}`).join(', ')}`;
+}
+
+/**
+ * Mean power by hour of day: solid navy for weekdays, dashed blue for weekends. The legend is HTML
+ * (see the profile view); each peak is a filled point with a direct label; hovering shows a vertical
+ * crosshair and both values. Labels every 3 hours, with a tick for each of the 24 hours.
+ */
 export function profileOptions(profile: DailyProfile): EChartsCoreOption {
   const hours = Array.from({ length: 24 }, (_, hour) => hour);
-  const series = (
-    name: string,
-    points: DailyProfile['weekday'],
-    color: string,
-    dashed: boolean,
-  ): object => {
+  const pointsById: Record<string, DailyProfile['weekday']> = {
+    weekday: profile.weekday,
+    weekend: profile.weekend,
+  };
+  const series = ({ id, name, color, dashed }: ProfileLine): object => {
+    const points = pointsById[id] ?? [];
     const byHour = new Map(points.map((point) => [point.hour, point.mean_power_w]));
+    const peak = peakOf(points, (point) => point.mean_power_w);
     return {
+      id,
       name,
       type: 'line',
       showSymbol: false,
@@ -142,29 +180,43 @@ export function profileOptions(profile: DailyProfile): EChartsCoreOption {
         const power = byHour.get(hour);
         return power === undefined ? null : wattsToKilowatts(power);
       }),
-      endLabel: {
-        show: true,
-        formatter: name,
-        color,
-        fontFamily: CHART_FONT,
-        fontWeight: 'bold',
-        fontSize: 12,
-      },
+      markPoint:
+        peak === undefined
+          ? undefined
+          : {
+              symbol: 'circle',
+              symbolSize: 10,
+              itemStyle: { color },
+              label: { position: 'top', offset: [0, -2] },
+              data: [
+                {
+                  coord: [formatHour(peak.hour), wattsToKilowatts(peak.mean_power_w)],
+                  label: peakLabel(
+                    `${formatKw(wattsToKilowatts(peak.mean_power_w))} à ${formatHour(peak.hour)}`,
+                    color,
+                  ),
+                },
+              ],
+            },
     };
   };
   return {
     animation: false,
-    grid: { ...GRID, right: 88 },
+    grid: { ...GRID, right: 8 },
     tooltip: {
       ...TOOLTIP_STYLE,
-      valueFormatter: (value: number) => formatKw(value, 2),
+      axisPointer: { type: 'line', lineStyle: { color: CHART_COLORS.navy, width: 1, type: 'solid' } },
+      formatter: (items: AxisTooltipItem[]): string => profileTooltip(items),
     },
-    xAxis: { ...CATEGORY_AXIS_STYLE, data: hours.map(formatHour) },
+    xAxis: {
+      ...CATEGORY_AXIS_STYLE,
+      boundaryGap: false,
+      data: hours.map(formatHour),
+      axisTick: { show: true, interval: 0, alignWithLabel: true },
+      axisLabel: { ...CATEGORY_AXIS_STYLE.axisLabel, interval: (index: number): boolean => index % 3 === 0 },
+    },
     yAxis: { ...VALUE_AXIS_STYLE, name: 'kW', min: 0 },
-    series: [
-      series('Semaine', profile.weekday, CHART_COLORS.navy, false),
-      series('Week-end', profile.weekend, CHART_COLORS.blue, true),
-    ],
+    series: PROFILE_LINES.map(series),
   };
 }
 

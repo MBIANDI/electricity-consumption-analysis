@@ -1,24 +1,24 @@
 <app-view-header [title]="title()" />
 
-<div class="controls">
-  <div class="toggle" role="group" aria-label="Granularité">
+<div class="controls card">
+  <div class="toggle" role="group" [attr.aria-label]="ui.granularity">
     <button
       type="button"
       [attr.aria-pressed]="granularity() === 'daily'"
       (click)="setGranularity('daily')"
     >
-      Par jour
+      {{ ui.daily }}
     </button>
     <button
       type="button"
       [attr.aria-pressed]="granularity() === 'hourly'"
       (click)="setGranularity('hourly')"
     >
-      Par heure
+      {{ ui.hourly }}
     </button>
   </div>
   <label>
-    Du
+    {{ ui.from }}
     <input
       type="date"
       [value]="rangeStart()"
@@ -28,7 +28,7 @@
     />
   </label>
   <label>
-    Au
+    {{ ui.to }}
     <input
       type="date"
       [value]="rangeEnd()"
@@ -37,12 +37,12 @@
       (change)="setEnd($event)"
     />
   </label>
-  <button type="button" class="link" (click)="resetRange()">Toute la période</button>
+  <button type="button" class="link" (click)="resetRange()">{{ ui.wholePeriod }}</button>
 </div>
 
 @if (isEmptyRange()) {
-  <p class="notice">Aucune donnée dans la plage sélectionnée.</p>
+  <p class="notice">{{ ui.emptyRange }}</p>
 } @else {
-  <app-chart [options]="options()" [description]="chartDescription()" />
+  <div class="card"><app-chart [options]="options()" [description]="chartDescription()" /></div>
 }
 <p class="footnote">{{ footnote() }}</p>

@@ -1,32 +1,35 @@
 <app-view-header
   [title]="title()"
-  subtitle="Les interruptions sont signalées et jamais comblées : une minute manquante ne compte aucune énergie."
+  [subtitle]="ui.subtitle"
 />
 
-<div class="coverage">
-  <span>Couverture : <strong>{{ coverage() }}</strong></span>
+<div class="coverage card">
+  <span>{{ ui.coverageLabel }} <strong>{{ coverage() }}</strong></span>
   <div class="bar" aria-hidden="true"><div class="fill" [style.width]="coverageWidth()"></div></div>
 </div>
 
-<h3 class="section">Couverture par jour (les jours incomplets sont en bleu)</h3>
-<app-chart
-  [options]="options()"
-  description="Pourcentage de minutes mesurées pour chaque jour de la période"
-/>
+<section class="card">
+  <h3 class="section">{{ ui.dailyCoverageTitle }}</h3>
+  <app-chart
+    [options]="options()"
+    [description]="ui.dailyCoverageDescription"
+  />
+</section>
 
-<h3 class="section">Interruptions de plus de {{ data().quality.gap_threshold_minutes }} minutes</h3>
+<section class="card">
+<h3 class="section">{{ ui.gapsTitle(data().quality.gap_threshold_minutes) }}</h3>
 @if (rows().length === 0) {
-  <p class="notice">Aucune interruption.</p>
+  <p class="notice">{{ ui.noGaps }}</p>
 } @else {
   <table>
     <caption class="visually-hidden">
-      Liste des interruptions de mesure
+      {{ ui.gapsCaption }}
     </caption>
     <thead>
       <tr>
-        <th scope="col">Début</th>
-        <th scope="col">Fin</th>
-        <th scope="col" class="num">Durée</th>
+        <th scope="col">{{ ui.start }}</th>
+        <th scope="col">{{ ui.end }}</th>
+        <th scope="col" class="num">{{ ui.duration }}</th>
       </tr>
     </thead>
     <tbody>
@@ -40,4 +43,5 @@
     </tbody>
   </table>
 }
+</section>
 <p class="footnote">{{ footnote() }}</p>
