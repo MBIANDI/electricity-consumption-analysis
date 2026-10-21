@@ -37,7 +37,7 @@ jobs:
         # --all-extras: ty and the import contracts resolve imports in both src/
         # packages, so both extras have to be installed. A bare sync installs the
         # shared core alone.
-        run: uv sync --frozen --all-extras --group dev --group prototype-ui
+        run: uv sync --frozen --all-extras --group dev
 
       - name: Apply patches
         run: uv run --no-sync python scripts/apply_patches.py
