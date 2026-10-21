@@ -226,3 +226,13 @@ __marimo__/
 apm_modules/
 .claude
 *mcp.json
+
+# Project: personal data and generated dashboard output
+data/*.json
+frontend/public/data/
+.venv/
+node_modules/
+__pycache__/
+
+# Track the shared MCP server config (the broad *mcp.json rule above ignores it)
+!.mcp.json
