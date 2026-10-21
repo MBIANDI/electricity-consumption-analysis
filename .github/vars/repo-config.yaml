@@ -1,0 +1,13 @@
+merge:
+  squash: true
+  merge_commit: false
+  rebase: false
+  delete_branch_on_merge: true
+branch_protection:
+  main:
+    required_approving_review_count: 1
+    admin_bypass: true
+    required_checks:
+      - lint #ci.yml
+      - trivy # ci-security.yml
+      - bandit # ci-security.yml
