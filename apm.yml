@@ -1,0 +1,26 @@
+name: electricity-consumption-analysis
+version: 1.0.0
+description: APM project for electricity-consumption-analysis
+author: MBIA NDI Marie Thérèse
+# Which agent platforms to deploy to.
+# Resolution order: --target flag > this field > auto-detect from filesystem.
+# Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-build, kiro, opencode, windsurf
+targets:
+- claude
+dependencies:
+  apm:
+    - angular/skills/angular-developer#22.2x
+    - angular/skills/angular-new-app
+    - pydantic/skills/skills/pydantic
+    - pydantic/skills/skills/building-pydantic-ai-agents
+  mcp:
+    - name: angular-cli
+      registry: false
+      transport: stdio
+      command: npx
+      args:
+        - y
+        - "@angular/cli"
+        - mcp
+includes: auto
+scripts: {}
