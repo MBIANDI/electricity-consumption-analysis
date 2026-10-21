@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { DashboardData } from '@models/dashboard';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { DashboardService } from '@services/dashboard.service';
 import { profileTitle, sourceFootnote } from '@services/insights';
 import { Chart } from '../shared/chart';
 import { profileOptions } from '../shared/chart-options';
@@ -12,7 +12,7 @@ import { ViewHeader } from '../shared/view-header';
   templateUrl: './profile.html',
 })
 export class Profile {
-  readonly data = input.required<DashboardData>();
+  protected readonly data = inject(DashboardService).data;
 
   protected readonly title = computed(() => profileTitle(this.data().daily_profile));
   protected readonly options = computed(() => profileOptions(this.data().daily_profile));

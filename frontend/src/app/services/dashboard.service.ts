@@ -1,5 +1,5 @@
 import { httpResource } from '@angular/common/http';
-import { computed, Injectable, InjectionToken, inject } from '@angular/core';
+import { computed, Injectable, InjectionToken, inject, linkedSignal } from '@angular/core';
 import { DashboardData, DashboardState } from '@models/dashboard';
 
 /** Location of the file written by `make export`. Override it in tests or other deployments. */
@@ -25,6 +25,23 @@ export class DashboardService {
       return { kind: 'empty' };
     }
     return { kind: 'ready', data };
+  });
+
+  private readonly lastData = linkedSignal<DashboardState, DashboardData | undefined>({
+    source: this.state,
+    computation: (state, previous) => (state.kind === 'ready' ? state.data : previous?.value),
+  });
+
+  /**
+   * Data for routed views, which are only rendered once the state is ready. It keeps the last
+   * loaded value so a reload never makes it throw while a view is being torn down.
+   */
+  readonly data = computed<DashboardData>(() => {
+    const data = this.lastData();
+    if (data === undefined) {
+      throw new Error('Dashboard data read before it was loaded');
+    }
+    return data;
   });
 
   reload(): void {

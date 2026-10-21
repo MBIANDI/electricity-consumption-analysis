@@ -2,11 +2,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  input,
+  inject,
   linkedSignal,
   signal,
 } from '@angular/core';
-import { DashboardData } from '@models/dashboard';
+import { DashboardService } from '@services/dashboard.service';
 import { localDayKey } from '@services/format';
 import {
   dailyConsumptionTitle,
@@ -27,7 +27,7 @@ type Granularity = 'daily' | 'hourly';
   styleUrl: './consumption.scss',
 })
 export class Consumption {
-  readonly data = input.required<DashboardData>();
+  protected readonly data = inject(DashboardService).data;
 
   protected readonly granularity = signal<Granularity>('daily');
 

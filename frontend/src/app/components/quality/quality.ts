@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { DashboardData } from '@models/dashboard';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { DashboardService } from '@services/dashboard.service';
 import { formatDateTime, formatDuration, formatPercent } from '@services/format';
 import { qualityTitle, sourceFootnote } from '@services/insights';
 import { Chart } from '../shared/chart';
@@ -20,7 +20,7 @@ interface GapRow {
   styleUrl: './quality.scss',
 })
 export class Quality {
-  readonly data = input.required<DashboardData>();
+  protected readonly data = inject(DashboardService).data;
 
   protected readonly title = computed(() => qualityTitle(this.data().quality));
   protected readonly coverage = computed(() => formatPercent(this.data().quality.coverage_pct));

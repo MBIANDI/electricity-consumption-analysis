@@ -1,0 +1,24 @@
+<div class="page">
+  <header class="masthead">
+    <a class="brand" routerLink="/" [attr.aria-label]="ui.homeLinkName">{{ ui.appTitle }}</a>
+    <nav [attr.aria-label]="ui.navLabel">
+      <ul>
+        @for (view of views; track view.path) {
+          <li>
+            <a [routerLink]="'/' + view.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{
+              view.label
+            }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    @if (isReady()) {
+      <router-outlet />
+    } @else {
+      <app-data-status />
+    }
+  </main>
+</div>

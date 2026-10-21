@@ -11,6 +11,18 @@ Angular app that visualises electricity consumption data produced by `data-scien
 `components` → `services` → `models`. Components never call `HttpClient`;
 only services talk to the API. Interfaces in `models/` mirror the API schema.
 
+## Views and routes (lazy-loaded standalone components, see `app.routes.ts`)
+| Path | View |
+|---|---|
+| `/` | Home: title, links to the three views, overview (KPIs) |
+| `/consommation` | Daily / hourly energy |
+| `/profil-journalier` | Average daily profile, weekday vs weekend |
+| `/qualite-des-donnees` | Coverage and gaps |
+
+Any other path redirects to `/`. The three views share `PageLayout` (compact header with a link
+to `/` and the nav). UI strings live in `services/ui-strings.ts`; route paths and nav labels in
+`services/navigation.ts`.
+
 ## Coding conventions
 - Standalone components with `ChangeDetectionStrategy.OnPush`.
 - Template state is a `signal()`, `computed()`, `input()` or `model()`; never a
