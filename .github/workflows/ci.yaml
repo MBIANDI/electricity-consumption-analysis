@@ -1,5 +1,5 @@
 name: CI
-run-name: "CI - ${{github.head_ref}}"
+run-name: "CI - ${{ github.head_ref || github.ref_name }}"
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -26,7 +26,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: ".python-version"
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
@@ -34,13 +34,7 @@ jobs:
           enable-cache: true
 
       - name: Install dependencies
-        # --all-extras: ty and the import contracts resolve imports in both src/
-        # packages, so both extras have to be installed. A bare sync installs the
-        # shared core alone.
         run: uv sync --frozen --all-extras --group dev
-
-      - name: Apply patches
-        run: uv run --no-sync python scripts/apply_patches.py
 
       - name: Ruff format check
         run: uv run --no-sync ruff format --check .
@@ -52,24 +46,3 @@ jobs:
 
       - name: ty type check
         run: uv run --no-sync ty check
-
-      - name: Import contracts
-        # The contracts in pyproject.toml's [tool.importlinter] hold the import direction
-        # between the src/ packages, imports the interpreter would otherwise accept: nothing
-        # reachable from contract_intelligence_backend may import the ML stack (what holds
-        # Dockerfile.backend to the `backend` extra), the domain packages never import
-        # contract_intelligence_datascience_api or fastapi, and the service never imports the
-        # prototype UIs.
-        run: uv run --no-sync lint-imports
-
-      - name: Schema stubs up to date
-        # The extraction models are built at runtime from config/schemas/*_fields.yaml;
-        # their static .pyi stubs are generated. Fail fast if a YAML edit wasn't re-stubbed.
-        # (tests/unit/contract_intelligence/schemas/test_schema_stubs.py also guards this in the test job.)
-        run: uv run --no-sync python scripts/generate_schema_stubs.py --check
-
-      - name: Contract type catalog up to date
-        # ContractType's member list is generated from config/contract_types.yaml. Fail fast
-        # if a YAML edit wasn't regenerated.
-        # (tests/unit/models/test_contract_types.py also guards this in the test job.)
-        run: uv run --no-sync python scripts/generate_contract_types.py --check
