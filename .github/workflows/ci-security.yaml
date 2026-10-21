@@ -1,0 +1,35 @@
+name: CI - Security
+run-name: "CI - Security - ${{github.head_ref}}"
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    runs-on: ${{vars.PUBLIC_RUNNER_IMAGE}}
+    steps:
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+      - uses :  astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      - name: Run bandit Security Scan
+        run: uvx --python 3.13 bandit -c pyproject.toml -r .
+
+  trivy:
+    runs-on: ${{vars.PUBLIC_RUNNER_IMAGE}}
+    steps:
+      - uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0 # v6.0.3
+
+      - name: Run Trivy Security Scan
+        uses:  aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          exit-code: 1
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true

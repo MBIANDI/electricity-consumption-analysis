@@ -1,0 +1,121 @@
+# Install with: make hooks
+# Run manually: uv run pre-commit run --all-files
+
+# post-checkout is installed alongside pre-commit so `pre-commit install` stays
+# the single bootstrap command. It carries the worktree-include hook below; git
+# keeps hooks in the common dir, so installing once covers every worktree.
+# An existing clone must re-run `make hooks` to pick up a new type added here.
+default_install_hook_types: [pre-commit, post-checkout]
+
+# A hook that names no `stages` runs at every installed stage, so without this
+# the whole suite below would also run on each checkout and branch switch,
+# printing a "no files to check" line for every hook that does not declare its
+# own `stages` upstream. Pin the default to commit time; worktree-include opts
+# into post-checkout explicitly.
+default_stages: [pre-commit]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        # Exclude .patch/.diff: a unified diff's blank context line IS a single
+        # space (the ' ' line-role prefix). That space is structural, not stray —
+        # stripping it makes the hunk's context mismatch and `patch` reject it.
+        # These files must stay byte-for-byte as fetched; never let a hook rewrite them.
+        exclude: '\.(patch|diff)$'
+      - id: end-of-file-fixer
+        exclude: '\.(patch|diff)$'
+      - id: check-yaml
+        # Strict (constructing) check for every YAML except mkdocs.yml — keeps
+        # full validation on the workflows and the business-critical
+        # config/schemas/*.yaml rather than weakening it repo-wide for one file.
+        exclude: '^mkdocs\.yml$'
+      - id: check-yaml
+        # mkdocs.yml only: its pymdownx.superfences Mermaid config uses a
+        # !!python/name: tag (fence_code_format) that plain yaml.safe_load can't
+        # construct. --unsafe checks syntax only, without construction.
+        name: check yaml (mkdocs.yml, unsafe)
+        alias: check-yaml-unsafe
+        args: ["--unsafe"]
+        files: '^mkdocs\.yml$'
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=5000']
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: mixed-line-ending
+        exclude: '\.(patch|diff)$'
+
+  # ruff and ty run from the project venv rather than a pinned mirror rev, so the version is
+  # whatever pyproject.toml pins — one source of truth. A separate rev here drifts: this hook
+  # sat on v0.11.13 while the dev group pinned >=0.15.22, linting the same code with a
+  # different ruff than ci.yml, which already runs `uv run --no-sync ruff`.
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --no-sync ruff check --force-exclude --fix --exit-non-zero-on-fix
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --no-sync ruff format --force-exclude
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ty
+        name: ty type check
+        # No path argument: a path on the command line overrides [tool.ty.src] include
+        # in pyproject.toml, so passing `src/` here would silently narrow the hook to a
+        # subset of what `make check` and CI check. Let the config decide the scope.
+        entry: uv run --no-sync ty check
+        language: system
+        pass_filenames: false
+        types: [python]
+      # biome.jsonc scopes this to docs/javascripts/**/*.js plus any root
+      # *.js/*.mjs — see biome.jsonc for why (this is a Python monorepo; Biome
+      # does not own arbitrary JSON or Markdown here). `types_or: [javascript]`
+      # means a Python-only commit never invokes pnpm exec, so contributors who
+      # have not run `pnpm install` are unaffected.
+      - id: biome-check
+        name: biome check (JS)
+        entry: npx --no-install biome check --write --no-errors-on-unmatched
+        language: system
+        types_or: [javascript]
+        require_serial: true
+      # Runs on post-checkout to seed a newly created worktree with the gitignored
+      # files listed in .worktree-include (`git worktree add` only checks out tracked
+      # files). Hooking git rather than wrapping `git worktree add` means it also
+      # fires for an IDE's or an agent's worktree creation. `language: script` builds
+      # no environment, so it stays cheap on the ordinary checkouts where it no-ops.
+      - id: worktree-include
+        name: seed new worktree with gitignored files
+        entry: scripts/git/copy-worktree-includes
+        language: script
+        stages: [post-checkout]
+        always_run: true
+        pass_filenames: false
+
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.25
+    hooks:
+      - id: validate-pyproject
+
+  # Catch a vulnerable dependency at the commit that introduces it, rather than in
+  # the ci-security.yml scan after the push. `files` scopes it to the two files that
+  # can change the dependency set, so an ordinary code commit never pays the scan.
+  # Needs trivy on PATH (`brew install trivy`).
+  # --skip-dirs excludes gitignored, never-committed local tooling caches that CI's own
+  # checkout never has (agent-skill plugin dirs, JS package installs) — scanning them
+  # would fail the hook on vulnerabilities this repo never ships.
+  - repo: local
+    hooks:
+      - id: trivy
+        name: trivy dependency scan
+        entry: trivy fs --exit-code 1 --severity CRITICAL,HIGH --quiet --skip-dirs .venv --skip-dirs .claude --skip-dirs .agents --skip-dirs apm_modules --skip-dirs node_modules .
+        language: system
+        pass_filenames: false
+        files: ^(uv\.lock|pyproject\.toml)$
