@@ -1,4 +1,4 @@
-<app-view-header [title]="title()" [subtitle]="ui.profile.subtitle" />
+<app-view-header [title]="title()" [subtitle]="insight()" />
 
 <dl class="peaks">
   @for (card of cards(); track card.label) {
@@ -20,5 +20,6 @@
     [description]="ui.profile.chartDescription"
     height="clamp(24rem, 55vh, 36rem)"
   />
+  <p class="caption">{{ dayCounts() }}. {{ ui.profile.caption }}</p>
 </div>
 <p class="footnote">{{ footnote() }}</p>

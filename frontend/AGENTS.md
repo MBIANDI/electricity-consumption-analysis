@@ -16,7 +16,7 @@ only services talk to the API. Interfaces in `models/` mirror the API schema.
 |---|---|
 | `/` | Home: title, links to the three views, overview (KPIs) |
 | `/consommation` | Daily / hourly energy |
-| `/profil-journalier` | Average daily profile, weekday vs weekend |
+| `/profil-journalier` | Average daily profile, weekday vs weekend: peak cards, 25th–75th percentile band, base-load line, day counts, factual sentence |
 | `/qualite-des-donnees` | Coverage and gaps |
 
 Any other path redirects to `/`. The three views share `PageLayout` (compact header with a link

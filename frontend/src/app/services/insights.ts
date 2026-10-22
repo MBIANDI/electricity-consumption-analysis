@@ -15,6 +15,7 @@ import {
   formatDuration,
   formatHour,
   formatKw,
+  formatKwDelta,
   formatKwh,
   formatPercent,
   formatPeriod,
@@ -67,6 +68,32 @@ export function profileTitle(profile: DailyProfile): string {
     `à ${formatKw(wattsToKilowatts(weekday.mean_power_w))} ; ` +
     `le ${UI.weekend.toLowerCase()}, à ${formatHour(weekend.hour)}, ` +
     `à ${formatKw(wattsToKilowatts(weekend.mean_power_w))}.`
+  );
+}
+
+const WATTS_PER_TENTH_OF_KW = 100;
+
+/** Power in kW rounded to the 0.1 kW shown on screen, so displayed figures always add up. */
+function displayedKw(watts: number): number {
+  return Math.round(watts / WATTS_PER_TENTH_OF_KW) / 10;
+}
+
+/**
+ * One factual sentence: the weekday peak hour compared with the same hour at the weekend.
+ * No cause is suggested. Empty when the weekend has no reading at that hour.
+ */
+export function profileInsight(profile: DailyProfile): string | undefined {
+  const peak = profilePeak(profile.weekday);
+  const weekend = profile.weekend.find((point) => point.hour === peak?.hour);
+  if (peak === undefined || weekend === undefined) {
+    return undefined;
+  }
+  const weekdayKw = displayedKw(peak.mean_power_w);
+  const weekendKw = displayedKw(weekend.mean_power_w);
+  const gap = Math.round((weekdayKw - weekendKw) * 10) / 10;
+  return (
+    `À ${formatHour(peak.hour)}, la puissance moyenne est de ${formatKw(weekdayKw)} en semaine ` +
+    `contre ${formatKw(weekendKw)} le ${UI.weekend.toLowerCase()} : ${formatKwDelta(gap)}.`
   );
 }
 

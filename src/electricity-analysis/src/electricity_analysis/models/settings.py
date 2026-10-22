@@ -1,6 +1,8 @@
 """Analysis settings shared by every layer."""
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Self
+
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class AnalysisSettings(BaseModel):
@@ -26,3 +28,22 @@ class AnalysisSettings(BaseModel):
         le=100,
         description="Minimum minute coverage (percent) for a local day to count as complete.",
     )
+    profile_band_lower_percentile: float = Field(
+        default=25.0,
+        ge=0,
+        le=100,
+        description="Lower edge (percent) of the daily-profile band, across days.",
+    )
+    profile_band_upper_percentile: float = Field(
+        default=75.0,
+        ge=0,
+        le=100,
+        description="Upper edge (percent) of the daily-profile band, across days.",
+    )
+
+    @model_validator(mode="after")
+    def _band_edges_are_ordered(self) -> Self:
+        if self.profile_band_lower_percentile >= self.profile_band_upper_percentile:
+            message = "profile_band_lower_percentile must be below profile_band_upper_percentile"
+            raise ValueError(message)
+        return self

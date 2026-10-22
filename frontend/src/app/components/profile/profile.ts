@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { DashboardService } from '@services/dashboard.service';
 import { formatHour, formatKw, wattsToKilowatts } from '@services/format';
-import { profilePeak, profileTitle, sourceFootnote } from '@services/insights';
+import { profileInsight, profilePeak, profileTitle, sourceFootnote } from '@services/insights';
 import { UI } from '@services/ui-strings';
 import { Chart } from '../shared/chart';
 import { profileOptions } from '../shared/chart-options';
@@ -27,7 +27,14 @@ export class Profile {
 
   protected readonly ui = UI;
   protected readonly title = computed(() => profileTitle(this.data().daily_profile));
-  protected readonly options = computed(() => profileOptions(this.data().daily_profile));
+  protected readonly insight = computed(() => profileInsight(this.data().daily_profile));
+  protected readonly dayCounts = computed(() => {
+    const { weekday_days, weekend_days } = this.data().daily_profile;
+    return UI.profile.dayCounts(weekday_days, weekend_days);
+  });
+  protected readonly options = computed(() =>
+    profileOptions(this.data().daily_profile, this.data().summary.base_load_w),
+  );
   protected readonly footnote = computed(() => sourceFootnote(this.data().source));
   protected readonly cards = computed<PeakCard[]>(() => {
     const { weekday, weekend } = this.data().daily_profile;

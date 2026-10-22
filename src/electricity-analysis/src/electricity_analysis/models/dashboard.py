@@ -62,6 +62,14 @@ class ProfilePoint(_Result):
 
     hour: int = Field(ge=0, le=23, description="Local hour of day.")
     mean_power_w: float = Field(description="Mean power over all observed minutes, in W.")
+    band_lower_power_w: float = Field(
+        description="Lower edge of the band (25th percentile by default): across days, the "
+        "mean power of this hour, in W."
+    )
+    band_upper_power_w: float = Field(
+        description="Upper edge of the band (75th percentile by default): across days, the "
+        "mean power of this hour, in W."
+    )
 
 
 class DailyProfile(_Result):
@@ -69,6 +77,12 @@ class DailyProfile(_Result):
 
     weekday: list[ProfilePoint] = Field(description="Monday to Friday.")
     weekend: list[ProfilePoint] = Field(description="Saturday and Sunday.")
+    weekday_days: int = Field(
+        description="Number of local weekdays with at least one reading, averaged in `weekday`."
+    )
+    weekend_days: int = Field(
+        description="Number of local weekend days with at least one reading, averaged in `weekend`."
+    )
 
 
 class DataGap(_Result):

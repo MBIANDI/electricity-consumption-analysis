@@ -13,9 +13,13 @@ export const UI = {
   weekday: 'Semaine',
   weekend: 'Week\u2011end',
   profile: {
-    subtitle: 'Puissance moyenne par heure locale (heure de Paris).',
     legendLabel: 'Légende',
     peakAt: 'Pic à',
+    baseLoadLabel: 'Puissance de base',
+    caption: 'Puissance moyenne par heure locale (heure de Paris). Zone claire : du 25e au 75e centile entre les jours.',
+    dayCounts: (weekdayDays: number, weekendDays: number): string =>
+      `Moyenne sur ${weekdayDays} ${weekdayDays > 1 ? 'jours' : 'jour'} de semaine ` +
+      `et ${weekendDays} ${weekendDays > 1 ? 'jours' : 'jour'} de week‑end`,
     chartDescription:
       "Courbes de la puissance moyenne en kW selon l'heure de la journée, en semaine et le week\u2011end",
   },

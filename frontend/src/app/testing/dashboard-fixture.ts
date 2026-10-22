@@ -33,13 +33,15 @@ export function makeDashboard(): DashboardData {
     ],
     daily_profile: {
       weekday: [
-        { hour: 7, mean_power_w: 900 },
-        { hour: 19, mean_power_w: 1700 },
+        { hour: 7, mean_power_w: 900, band_lower_power_w: 800, band_upper_power_w: 1000 },
+        { hour: 19, mean_power_w: 1700, band_lower_power_w: 1500, band_upper_power_w: 1900 },
       ],
       weekend: [
-        { hour: 12, mean_power_w: 1300 },
-        { hour: 20, mean_power_w: 1000 },
+        { hour: 12, mean_power_w: 1300, band_lower_power_w: 1200, band_upper_power_w: 1400 },
+        { hour: 20, mean_power_w: 1000, band_lower_power_w: 900, band_upper_power_w: 1100 },
       ],
+      weekday_days: 32,
+      weekend_days: 13,
     },
     quality: {
       expected_minutes: 2880,

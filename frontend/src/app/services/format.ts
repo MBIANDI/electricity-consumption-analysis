@@ -27,6 +27,16 @@ export function formatKw(value: number, fractionDigits = 1): string {
   return `${number(value, fractionDigits)}${NBSP}kW`;
 }
 
+/** `+0,7 kW`, with an explicit sign unless the value is zero. */
+export function formatKwDelta(value: number, fractionDigits = 1): string {
+  const signed = new Intl.NumberFormat(LOCALE, {
+    signDisplay: 'exceptZero',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+  return `${signed}${NBSP}kW`;
+}
+
 export function formatWatts(value: number): string {
   return `${number(value, 0)}${NBSP}W`;
 }

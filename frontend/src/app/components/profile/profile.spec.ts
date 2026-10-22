@@ -37,4 +37,13 @@ describe('Profile', () => {
       true,
     ]);
   });
+
+  it('states the factual insight under the title and the day counts under the chart', () => {
+    const element = render();
+
+    expect(element.querySelector('app-view-header')).not.toBeNull();
+    expect(element.querySelector('.caption')?.textContent).toContain(
+      'Moyenne sur 32 jours de semaine et 13 jours de week‑end',
+    );
+  });
 });

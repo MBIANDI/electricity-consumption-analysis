@@ -64,6 +64,10 @@ export interface ProfilePoint {
   hour: number;
   /** Mean power over all observed minutes, in W. */
   mean_power_w: number;
+  /** Lower edge of the band (25th percentile by default): across days, the mean power of this hour, in W. */
+  band_lower_power_w: number;
+  /** Upper edge of the band (75th percentile by default): across days, the mean power of this hour, in W. */
+  band_upper_power_w: number;
 }
 
 export interface DailyProfile {
@@ -71,6 +75,10 @@ export interface DailyProfile {
   weekday: ProfilePoint[];
   /** Saturday and Sunday. */
   weekend: ProfilePoint[];
+  /** Number of local weekdays with at least one reading, averaged in `weekday`. */
+  weekday_days: number;
+  /** Number of local weekend days with at least one reading, averaged in `weekend`. */
+  weekend_days: number;
 }
 
 export interface DataGap {

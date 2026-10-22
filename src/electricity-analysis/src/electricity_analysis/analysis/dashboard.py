@@ -28,6 +28,7 @@ from electricity_analysis.models.settings import AnalysisSettings
 
 _MINUTES_PER_HOUR = 60
 _WATTS_PER_KILOWATT = 1000
+_PERCENT = 100
 _FIRST_WEEKEND_DAY = 5  # Saturday, with Monday = 0
 
 
@@ -54,7 +55,7 @@ def build_dashboard(series: MinuteSeries, settings: AnalysisSettings) -> Dashboa
         summary=_summary(frame, daily, settings),
         hourly=_hourly_points(frame),
         daily=daily,
-        daily_profile=_daily_profile(frame, local),
+        daily_profile=_daily_profile(frame, local, settings),
         quality=_quality(frame, settings),
     )
 
@@ -125,18 +126,45 @@ def _minutes_in_local_day(day: date, zone: ZoneInfo) -> int:
     return int((end - start).total_seconds() // _MINUTES_PER_HOUR)
 
 
-def _daily_profile(frame: pd.DataFrame, local: pd.Series) -> DailyProfile:
-    is_weekend = local.dt.dayofweek >= _FIRST_WEEKEND_DAY
-    means = frame.groupby([is_weekend, local.dt.hour])["power_w"].mean()
+def _daily_profile(
+    frame: pd.DataFrame, local: pd.Series, settings: AnalysisSettings
+) -> DailyProfile:
+    minutes = pd.DataFrame(
+        {
+            "weekend": local.dt.dayofweek >= _FIRST_WEEKEND_DAY,
+            "day": local.dt.date,
+            "hour": local.dt.hour,
+            "power_w": frame["power_w"],
+        }
+    )
+    means = minutes.groupby(["weekend", "hour"])["power_w"].mean()
+    # One value per local day and hour, so the band shows day-to-day spread, not minute noise.
+    per_day = minutes.groupby(["weekend", "hour", "day"])["power_w"].mean()
+    band_edges = per_day.groupby(level=["weekend", "hour"])
+    lower = band_edges.quantile(settings.profile_band_lower_percentile / _PERCENT)
+    upper = band_edges.quantile(settings.profile_band_upper_percentile / _PERCENT)
 
     def points(weekend: bool) -> list[ProfilePoint]:
         return [
-            ProfilePoint(hour=int(hour), mean_power_w=float(value))
+            ProfilePoint(
+                hour=int(hour),
+                mean_power_w=float(value),
+                band_lower_power_w=float(lower[(flag, hour)]),
+                band_upper_power_w=float(upper[(flag, hour)]),
+            )
             for (flag, hour), value in means.items()
             if flag == weekend
         ]
 
-    return DailyProfile(weekday=points(weekend=False), weekend=points(weekend=True))
+    def days(weekend: bool) -> int:
+        return int(minutes.loc[minutes["weekend"] == weekend, "day"].nunique())
+
+    return DailyProfile(
+        weekday=points(weekend=False),
+        weekend=points(weekend=True),
+        weekday_days=days(weekend=False),
+        weekend_days=days(weekend=True),
+    )
 
 
 def _quality(frame: pd.DataFrame, settings: AnalysisSettings) -> DataQuality:

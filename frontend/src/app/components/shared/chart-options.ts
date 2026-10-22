@@ -5,6 +5,7 @@ import {
   DailyEnergyPoint,
   DailyProfile,
   HourlyEnergyPoint,
+  ProfilePoint,
 } from '@models/dashboard';
 import {
   formatDayShort,
@@ -13,6 +14,7 @@ import {
   formatKw,
   formatKwh,
   formatPercent,
+  formatWatts,
   wattsToKilowatts,
 } from '@services/format';
 import { peakOf } from '@services/insights';
@@ -130,6 +132,8 @@ interface ProfileLine {
   dashed: boolean;
 }
 
+const BASE_LOAD_ID = 'base-load';
+
 const PROFILE_LINES: readonly ProfileLine[] = [
   { id: 'weekday', name: UI.weekday, color: CHART_COLORS.navy, dashed: false },
   { id: 'weekend', name: UI.weekend, color: CHART_COLORS.blue, dashed: true },
@@ -154,20 +158,49 @@ export function profileTooltip(items: readonly AxisTooltipItem[]): string {
   return `${lines[0].axisValue} — ${lines.map((item) => `${item.seriesName} ${formatKw(item.value as number)}`).join(', ')}`;
 }
 
+const BAND_OPACITY = 0.14;
+
 /**
- * Mean power by hour of day: solid navy for weekdays, dashed blue for weekends. The legend is HTML
- * (see the profile view); each peak is a filled point with a direct label; hovering shows a vertical
- * crosshair and both values. Labels every 3 hours, with a tick for each of the 24 hours.
+ * Mean power by hour of day: solid navy for weekdays, dashed blue for weekends, each over a light
+ * tint of its 25th–75th percentile band. A thin grey dashed line marks the base load. The legend is
+ * HTML (see the profile view); each peak is a filled point with a direct label; hovering shows a
+ * vertical crosshair and both values. Labels every 3 hours, with a tick for each of the 24 hours.
  */
-export function profileOptions(profile: DailyProfile): EChartsCoreOption {
+export function profileOptions(profile: DailyProfile, baseLoadW: number): EChartsCoreOption {
   const hours = Array.from({ length: 24 }, (_, hour) => hour);
   const pointsById: Record<string, DailyProfile['weekday']> = {
     weekday: profile.weekday,
     weekend: profile.weekend,
   };
-  const series = ({ id, name, color, dashed }: ProfileLine): object => {
+  /** One value per hour of the day, `null` where the profile has no point; converted to kW. */
+  const perHour = (
+    points: DailyProfile['weekday'],
+    value: (point: ProfilePoint) => number,
+  ): (number | null)[] => {
+    const byHour = new Map(points.map((point) => [point.hour, wattsToKilowatts(value(point))]));
+    return hours.map((hour) => byHour.get(hour) ?? null);
+  };
+  const hidden = { silent: true, showSymbol: false, symbol: 'none', lineStyle: { opacity: 0 } };
+  // The band is two stacked areas: an invisible one up to the lower edge, then the visible spread.
+  const band = ({ id, color }: ProfileLine): object[] => {
     const points = pointsById[id] ?? [];
-    const byHour = new Map(points.map((point) => [point.hour, point.mean_power_w]));
+    const lower = perHour(points, (point) => point.band_lower_power_w);
+    // Spread computed in W then converted, so the stacked value carries no float noise.
+    const spread = perHour(points, (point) => point.band_upper_power_w - point.band_lower_power_w);
+    return [
+      { ...hidden, id: `${id}-band-base`, type: 'line', stack: `${id}-band`, data: lower },
+      {
+        ...hidden,
+        id: `${id}-band`,
+        type: 'line',
+        stack: `${id}-band`,
+        areaStyle: { color, opacity: BAND_OPACITY },
+        data: spread,
+      },
+    ];
+  };
+  const line = ({ id, name, color, dashed }: ProfileLine): object => {
+    const points = pointsById[id] ?? [];
     const peak = peakOf(points, (point) => point.mean_power_w);
     return {
       id,
@@ -176,10 +209,7 @@ export function profileOptions(profile: DailyProfile): EChartsCoreOption {
       showSymbol: false,
       lineStyle: { color, width: 2, type: dashed ? 'dashed' : 'solid' },
       itemStyle: { color },
-      data: hours.map((hour) => {
-        const power = byHour.get(hour);
-        return power === undefined ? null : wattsToKilowatts(power);
-      }),
+      data: perHour(points, (point) => point.mean_power_w),
       markPoint:
         peak === undefined
           ? undefined
@@ -200,6 +230,33 @@ export function profileOptions(profile: DailyProfile): EChartsCoreOption {
             },
     };
   };
+  const baseLoad = {
+    id: BASE_LOAD_ID,
+    name: UI.profile.baseLoadLabel,
+    type: 'line',
+    silent: true,
+    // ECharts draws a point label only on a symbol: keep one of size 0 so the label shows.
+    showSymbol: true,
+    symbol: 'circle',
+    symbolSize: 0,
+    lineStyle: { color: CHART_COLORS.textSecondary, width: 1, type: 'dashed' },
+    data: hours.map((hour) =>
+      hour === 0
+        ? {
+            value: wattsToKilowatts(baseLoadW),
+            label: {
+              show: true,
+              position: 'top',
+              align: 'left',
+              formatter: `${UI.profile.baseLoadLabel} : ${formatWatts(baseLoadW)}`,
+              color: CHART_COLORS.textSecondary,
+              fontFamily: CHART_FONT,
+              fontSize: 12,
+            },
+          }
+        : wattsToKilowatts(baseLoadW),
+    ),
+  };
   return {
     animation: false,
     grid: { ...GRID, right: 8 },
@@ -216,7 +273,7 @@ export function profileOptions(profile: DailyProfile): EChartsCoreOption {
       axisLabel: { ...CATEGORY_AXIS_STYLE.axisLabel, interval: (index: number): boolean => index % 3 === 0 },
     },
     yAxis: { ...VALUE_AXIS_STYLE, name: 'kW', min: 0 },
-    series: PROFILE_LINES.map(series),
+    series: [...PROFILE_LINES.flatMap(band), ...PROFILE_LINES.map(line), baseLoad],
   };
 }
 

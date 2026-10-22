@@ -118,3 +118,70 @@ def test_profile_separates_weekdays_and_weekends() -> None:
 
     assert [(p.hour, p.mean_power_w) for p in profile.weekend] == [(12, 2000.0)]
     assert [(p.hour, p.mean_power_w) for p in profile.weekday] == [(11, 500.0)]
+
+
+def _readings(*day_series: MinuteSeries) -> MinuteSeries:
+    return MinuteSeries(
+        device_id="d", readings=[reading for part in day_series for reading in part.readings]
+    )
+
+
+def test_profile_band_is_the_25th_to_75th_percentile_across_days() -> None:
+    # Mon 5 to Thu 8 Oct 2026 at 12:00 Paris (10:00 UTC, CEST): day means 100, 200, 300, 500 W.
+    # Linear interpolation: p25 at position 0.75 = 175 W, p75 at position 2.25 = 350 W.
+    weekdays = [
+        constant_series(utc(2026, 10, day, 10), 60, power)
+        for day, power in [(5, 100), (6, 200), (7, 300), (8, 500)]
+    ]
+    saturday = constant_series(utc(2026, 10, 10, 10), 60, 1000)
+
+    profile = build_dashboard(_readings(*weekdays, saturday), SETTINGS).daily_profile
+
+    [weekday] = profile.weekday
+    assert (weekday.hour, weekday.mean_power_w) == (12, 275.0)
+    assert (weekday.band_lower_power_w, weekday.band_upper_power_w) == (175.0, 350.0)
+    [weekend] = profile.weekend
+    assert (weekend.band_lower_power_w, weekend.band_upper_power_w) == (1000.0, 1000.0)
+
+
+def test_profile_band_uses_one_value_per_day_not_per_minute() -> None:
+    # One day has 30 minutes at 100 W then 30 at 300 W in the same hour: its hour mean is 200 W.
+    # Another day is constant 600 W. Per-minute percentiles would give 100 and 600 at the edges;
+    # per-day values [200, 600] give p25 = 300 W and p75 = 500 W.
+    first = _readings(
+        constant_series(utc(2026, 10, 5, 10), 30, 100),
+        constant_series(utc(2026, 10, 5, 10, 30), 30, 300),
+    )
+    second = constant_series(utc(2026, 10, 6, 10), 60, 600)
+
+    [point] = build_dashboard(_readings(first, second), SETTINGS).daily_profile.weekday
+
+    assert (point.band_lower_power_w, point.band_upper_power_w) == (300.0, 500.0)
+
+
+def test_profile_counts_the_local_days_averaged_in_each_group() -> None:
+    # Mon 5 and Tue 6 Oct have data in two different hours each; Sat 10 has one hour;
+    # Sun 11 is absent. A day is counted once however many hours it has.
+    monday = _readings(
+        constant_series(utc(2026, 10, 5, 8), 60, 100),
+        constant_series(utc(2026, 10, 5, 13), 60, 100),
+    )
+    tuesday = _readings(
+        constant_series(utc(2026, 10, 6, 8), 60, 100),
+        constant_series(utc(2026, 10, 6, 13), 60, 100),
+    )
+    saturday = constant_series(utc(2026, 10, 10, 8), 60, 100)
+
+    profile = build_dashboard(_readings(monday, tuesday, saturday), SETTINGS).daily_profile
+
+    assert (profile.weekday_days, profile.weekend_days) == (2, 1)
+
+
+def test_profile_assigns_days_by_paris_local_date() -> None:
+    # 22:30 UTC on Friday 9 Oct is 00:30 on Saturday 10 Oct in Paris: a weekend day, not a weekday.
+    series = constant_series(utc(2026, 10, 9, 22, 30), 30, 100)
+
+    profile = build_dashboard(series, SETTINGS).daily_profile
+
+    assert (profile.weekday_days, profile.weekend_days) == (0, 1)
+    assert profile.weekday == []

@@ -60,3 +60,9 @@ dt {
     border-top-color: var(--color-blue);
   }
 }
+
+.caption {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}

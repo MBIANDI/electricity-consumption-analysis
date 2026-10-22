@@ -4,6 +4,7 @@ import {
   hourlyConsumptionTitle,
   overviewTitle,
   peakOf,
+  profileInsight,
   profileTitle,
   qualityTitle,
   sourceFootnote,
@@ -73,5 +74,33 @@ describe('insights', () => {
     expect(title).not.toContain('week-end');
     expect(title).toContain('19\u00a0h');
     expect(title).toContain('1,7\u00a0kW');
+  });
+
+  it('compares the weekday peak hour with the same hour at the weekend, without a cause', () => {
+    const profile = {
+      ...data.daily_profile,
+      weekday: [{ hour: 6, mean_power_w: 1705, band_lower_power_w: 0, band_upper_power_w: 0 }],
+      weekend: [{ hour: 6, mean_power_w: 1044, band_lower_power_w: 0, band_upper_power_w: 0 }],
+    };
+
+    expect(profileInsight(profile)).toBe(
+      'À 6 h, la puissance moyenne est de 1,7 kW en semaine contre 1,0 kW le week‑end : +0,7 kW.',
+    );
+  });
+
+  it('shows a minus sign when the weekend is higher at the weekday peak hour', () => {
+    const profile = {
+      ...data.daily_profile,
+      weekday: [{ hour: 9, mean_power_w: 1000, band_lower_power_w: 0, band_upper_power_w: 0 }],
+      weekend: [{ hour: 9, mean_power_w: 1300, band_lower_power_w: 0, band_upper_power_w: 0 }],
+    };
+
+    expect(profileInsight(profile)).toBe(
+      'À 9 h, la puissance moyenne est de 1,0 kW en semaine contre 1,3 kW le week‑end : -0,3 kW.',
+    );
+  });
+
+  it('has no insight when the weekend has no reading at the weekday peak hour', () => {
+    expect(profileInsight(data.daily_profile)).toBeUndefined();
   });
 });
