@@ -21,6 +21,9 @@ class _ShellyRecord(BaseModel):
     phase_a_power_w: float = Field(alias="a_act_power_moy_w_derive")
     phase_b_power_w: float = Field(alias="b_act_power_moy_w_derive")
     phase_c_power_w: float = Field(alias="c_act_power_moy_w_derive")
+    voltage_a_v: float = Field(alias="a_voltage_moy_v_mesure")
+    voltage_b_v: float = Field(alias="b_voltage_moy_v_mesure")
+    voltage_c_v: float = Field(alias="c_voltage_moy_v_mesure")
 
 
 _RECORDS = TypeAdapter(list[_ShellyRecord])
@@ -47,6 +50,9 @@ def read_shelly_file(path: Path) -> MinuteSeries:
                 phase_a_power_w=record.phase_a_power_w,
                 phase_b_power_w=record.phase_b_power_w,
                 phase_c_power_w=record.phase_c_power_w,
+                voltage_a_v=record.voltage_a_v,
+                voltage_b_v=record.voltage_b_v,
+                voltage_c_v=record.voltage_c_v,
             )
             for record in records
         ),

@@ -4,6 +4,8 @@ from datetime import date
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
+from electricity_analysis.models.voltage import VoltageQualityReport
+
 
 class _Result(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -112,3 +114,4 @@ class DashboardData(_Result):
     daily: list[DailyEnergyPoint]
     daily_profile: DailyProfile
     quality: DataQuality
+    voltage: VoltageQualityReport

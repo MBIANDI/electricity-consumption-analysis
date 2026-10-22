@@ -6,6 +6,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from electricity_analysis.analysis.voltage import VoltageError
 from electricity_analysis.api.export import ExportRequest, export_dashboard
 from electricity_analysis.ingestion.shelly import IngestionError
 
@@ -21,7 +22,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         result = export_dashboard(ExportRequest(input_path=args.input, output_dir=args.output))
-    except (OSError, IngestionError, ValidationError) as error:
+    except (OSError, IngestionError, VoltageError, ValidationError) as error:
         print(f"export failed: {error}", file=sys.stderr)
         return 1
     print(f"wrote {result.dashboard_path}")

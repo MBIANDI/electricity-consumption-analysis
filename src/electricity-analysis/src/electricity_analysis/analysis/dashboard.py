@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
+from electricity_analysis.analysis.voltage import build_voltage_report
 from electricity_analysis.models.dashboard import (
     ConsumptionSummary,
     DailyEnergyPoint,
@@ -57,6 +58,7 @@ def build_dashboard(series: MinuteSeries, settings: AnalysisSettings) -> Dashboa
         daily=daily,
         daily_profile=_daily_profile(frame, local, settings),
         quality=_quality(frame, settings),
+        voltage=build_voltage_report(series, settings),
     )
 
 

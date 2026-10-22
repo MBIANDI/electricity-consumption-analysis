@@ -43,6 +43,7 @@ def export_dashboard(request: ExportRequest) -> ExportResult:
     schema_path = request.output_dir / SCHEMA_FILE
     dashboard_path.write_text(dashboard.model_dump_json(), encoding="utf-8")
     schema_path.write_text(
-        json.dumps(DashboardData.model_json_schema(), indent=2) + "\n", encoding="utf-8"
+        json.dumps(DashboardData.model_json_schema(mode="serialization"), indent=2) + "\n",
+        encoding="utf-8",
     )
     return ExportResult(dashboard_path=dashboard_path, schema_path=schema_path)

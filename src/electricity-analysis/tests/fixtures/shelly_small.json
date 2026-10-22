@@ -1,4 +1,4 @@
 [
-  {"device_id": "shelly-test", "minute_locale": "2026-01-01T01:01:00.000", "a_act_power_moy_w_derive": 100.0, "b_act_power_moy_w_derive": 20.0, "c_act_power_moy_w_derive": 3.0, "a_voltage_moy_v_mesure": 230.0, "freq_hz_indisponible": null, "timestamp_utc": "2026-01-01T00:01:00.000Z"},
-  {"device_id": "shelly-test", "minute_locale": "2026-01-01T01:00:00.000", "a_act_power_moy_w_derive": 10.0, "b_act_power_moy_w_derive": 0.0, "c_act_power_moy_w_derive": 0.0, "a_voltage_moy_v_mesure": 230.0, "freq_hz_indisponible": null, "timestamp_utc": "2026-01-01T00:00:00.000Z"}
+  {"device_id": "shelly-test", "minute_locale": "2026-01-01T01:01:00.000", "a_act_power_moy_w_derive": 100.0, "b_act_power_moy_w_derive": 20.0, "c_act_power_moy_w_derive": 3.0, "a_voltage_moy_v_mesure": 230.0, "b_voltage_moy_v_mesure": 231.0, "c_voltage_moy_v_mesure": 232.0, "freq_hz_indisponible": null, "timestamp_utc": "2026-01-01T00:01:00.000Z"},
+  {"device_id": "shelly-test", "minute_locale": "2026-01-01T01:00:00.000", "a_act_power_moy_w_derive": 10.0, "b_act_power_moy_w_derive": 0.0, "c_act_power_moy_w_derive": 0.0, "a_voltage_moy_v_mesure": 230.0, "b_voltage_moy_v_mesure": 231.0, "c_voltage_moy_v_mesure": 232.0, "freq_hz_indisponible": null, "timestamp_utc": "2026-01-01T00:00:00.000Z"}
 ]

@@ -19,3 +19,27 @@
 - **Coverage**: observed minutes over the minutes between first and last reading, inclusive.
 - **Gap**: a run of missing minutes strictly longer than 5 minutes. Gaps are reported, never
   interpolated.
+
+## Supply voltage ("Qualité de service")
+- **Rule** (client): nominal 220 V, tolerance ±10 %, so 198 V to 242 V. Both are settings
+  (`AnalysisSettings.voltage`, defaults 220 and 10), exported in `dashboard.json` under
+  `voltage.settings` together with the derived `lower_v` / `upper_v`. Nothing is hardcoded.
+- **Minute voltage**: mean of the phases A, B, C that were measured that minute. A phase at 0 V is
+  not measured (start-up artefact, see `docs/data-format.md`) and is left out; if all three are 0 V
+  the minute has no voltage.
+- **Out of range**: strictly below 198 V or strictly above 242 V. The bounds are compliant.
+- **Missing minutes** (no reading, or no usable voltage) are neither compliant nor non-compliant.
+  They are reported as `missing_minutes` / `coverage_pct` and never interpolated.
+  `pct_time_in_range` is measured in-range minutes over measured minutes.
+- **Excursion**: a run of out-of-range minutes in one direction (`below` / `above`). Runs of the
+  same direction separated by **fewer than 5 minutes** (compliant or missing, setting
+  `excursion_merge_minutes`) are merged into one excursion. `duration_min` runs from the first to
+  the last out-of-range minute inclusive; `out_of_range_minutes` counts only the out-of-range ones.
+  Start and end are given in Europe/Paris. `worst_value_v` is the lowest (below) or highest
+  (above) minute voltage.
+- **Daily series**: one point per Paris local day from the first to the last measured day (min,
+  mean, max, out-of-range minutes). A day without data has `null` values. **Hourly series**:
+  min / mean / max per UTC hour, a downsampled detail for the chart (about 1,000 points).
+- **Not EN 50160.** This is a minute-by-minute check against the client's rule. The formal
+  assessment uses 10-minute means and requires 95 % of a week within the range. Results must not
+  be presented as legal compliance.

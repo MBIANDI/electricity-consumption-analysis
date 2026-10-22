@@ -23,4 +23,6 @@ def test_export_writes_dashboard_and_matching_schema(tmp_path: Path) -> None:
     assert result.schema_path == output / SCHEMA_FILE
     dashboard = DashboardData.model_validate_json(result.dashboard_path.read_text("utf-8"))
     assert dashboard.summary.total_energy_kwh == (10 + 123) / 1000 / 60
-    assert json.loads(result.schema_path.read_text("utf-8")) == DashboardData.model_json_schema()
+    assert json.loads(result.schema_path.read_text("utf-8")) == DashboardData.model_json_schema(
+        mode="serialization"
+    )

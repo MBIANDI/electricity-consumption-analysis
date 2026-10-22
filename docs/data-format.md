@@ -33,6 +33,23 @@ gitignored, never modified). Figures below come from a one-off inspection script
 - Negative values: only in measured `min`/`max` columns (phase A min: 20 rows).
 - Outliers: naive three-phase total peaks at 8.65 kW on 2026-09-13T07:43Z.
 
+## Voltage (supply quality)
+Inspected for the "Qualité de service" section.
+- Fields: `a_voltage_moy_v_mesure`, `b_voltage_moy_v_mesure`, `c_voltage_moy_v_mesure`. Unit V,
+  phase-to-neutral, **mean over the minute, measured** (`moy`, `mesure`). One value per phase per
+  minute; no min/max voltage columns. No nulls.
+- Typical values: median 227.2 V (all phases), 1 %-99 % range about 204.5-237.2 V,
+  extremes 180.4 V and 246.1 V. The three phases are almost identical (correlation >= 0.998,
+  median gap 0.1 V, maximum gap 4 V).
+- **Zeros**: phases A and B read 0 V on 61 rows, all in the first hour of the file
+  (2026-08-31T16:33Z to 17:33Z) while phase C reads about 236 V and the meter reports
+  current and power. They are a start-up artefact of the measurement, not an outage. Phase C
+  has no zero. Zeros are never treated as voltages.
+- Out of range against 198-242 V, on rows where all phases are valid: phase A 68 below / 12
+  above, B 72 / 9, C 67 / 11. Mean of the three phases: 69 / 11. 84 minutes have at least one
+  phase out of range.
+- No value below 100 V other than the zeros: no sign of a real outage.
+
 ## Assumptions (v1)
 1. Total power = phase A + B + C mean power.
 2. Time is read from `timestamp_utc`; local days use Europe/Paris (CEST to CET switch on
