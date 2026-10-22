@@ -41,6 +41,8 @@ repos:
         args: ["--unsafe"]
         files: '^mkdocs\.yml$'
       - id: check-json
+        # tsconfig files are JSON with comments (JSONC), which check-json rejects.
+        exclude: '(^|/)tsconfig[^/]*\.json$'
       - id: check-added-large-files
         args: ['--maxkb=5000']
       - id: check-merge-conflict
@@ -56,13 +58,13 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check
-        entry: uv run --no-sync ruff check --force-exclude --fix --exit-non-zero-on-fix
+        entry: uv run --no-sync --project src/electricity-analysis ruff check --force-exclude --fix --exit-non-zero-on-fix
         language: system
         types_or: [python, pyi]
         require_serial: true
       - id: ruff-format
         name: ruff format
-        entry: uv run --no-sync ruff format --force-exclude
+        entry: uv run --no-sync --project src/electricity-analysis ruff format --force-exclude
         language: system
         types_or: [python, pyi]
         require_serial: true
@@ -71,7 +73,7 @@ repos:
         # No path argument: a path on the command line overrides [tool.ty.src] include
         # in pyproject.toml, so passing `src/` here would silently narrow the hook to a
         # subset of what `make check` and CI check. Let the config decide the scope.
-        entry: uv run --no-sync ty check
+        entry: uv run --no-sync --project src/electricity-analysis ty check
         language: system
         pass_filenames: false
         types: [python]
@@ -118,4 +120,4 @@ repos:
         entry: trivy fs --exit-code 1 --severity CRITICAL,HIGH --quiet --skip-dirs .venv --skip-dirs .claude --skip-dirs .agents --skip-dirs apm_modules --skip-dirs node_modules .
         language: system
         pass_filenames: false
-        files: ^(uv\.lock|pyproject\.toml)$
+        files: (^|/)(uv\.lock|pyproject\.toml)$

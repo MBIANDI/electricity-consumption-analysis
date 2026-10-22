@@ -1,0 +1,62 @@
+[project]
+name = "electricity-analysis"
+version = "0.1.0"
+description = "This repo is for electricity consumption analysis."
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    { name = "MBIA NDI Marie Thérèse", email = "mbialaura12@gmail.com" }
+]
+dependencies = [
+    "pandas>=3.0.6",
+    "pydantic>=2.14.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "electricity_analysis"
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.15",
+    "pre-commit>=4.7.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+    "ty>=0.0.90",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.importlinter]
+root_package = "electricity_analysis"
+
+[[tool.importlinter.contracts]]
+name = "Layered architecture (dependencies point downward only)"
+type = "layers"
+layers = [
+    "electricity_analysis.api",
+    "electricity_analysis.analysis",
+    "electricity_analysis.ingestion",
+    "electricity_analysis.models",
+]
+
+[tool.bandit]
+exclude_dirs = [".venv", "tests", "node_modules"]

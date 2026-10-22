@@ -1,0 +1,32 @@
+// Design tokens. This is the only stylesheet that may contain hex values.
+:root {
+  --color-navy: #051c2c;
+  --color-blue: #2251ff;
+  --color-blue-mid: #6485ff;
+  --color-blue-light: #a7b9ff;
+  --color-blue-tint: #d3dcff;
+  --color-text-secondary: #4f5b66; // AA (5.8:1) on the sky page background and on white
+  --color-grid: #d5dae0;
+  --color-surface: #f3f5f7;
+  --color-white: #ffffff;
+  --color-sky: #dceefa;
+  // The only alert colour (AA on white and on the sky background). Out-of-range values only,
+  // always paired with a marker shape or a text.
+  --color-alert: #b3261e;
+
+  --font-title: Georgia, 'Times New Roman', serif;
+  --font-body: Arial, Helvetica, sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+
+  --radius: 4px;
+  --shadow-card: 0 1px 2px rgb(5 28 44 / 8%);
+
+  --rule: 1px solid var(--color-grid);
+  --rule-strong: 2px solid var(--color-navy);
+}

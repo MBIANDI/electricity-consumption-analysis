@@ -1,0 +1,25 @@
+<app-view-header [title]="title()" [subtitle]="insight()" />
+
+<dl class="peaks">
+  @for (card of cards(); track card.label) {
+    <div class="card peak">
+      <dt><span class="sample" [class.dashed]="card.dashed" aria-hidden="true"></span>{{ card.label }}</dt>
+      <dd class="value">{{ card.power }}</dd>
+      <dd class="detail">{{ ui.profile.peakAt }} {{ card.hour }}</dd>
+    </div>
+  }
+</dl>
+
+<div class="card">
+  <ul class="legend" [attr.aria-label]="ui.profile.legendLabel">
+    <li><span class="sample" aria-hidden="true"></span>{{ ui.weekday }}</li>
+    <li><span class="sample dashed" aria-hidden="true"></span>{{ ui.weekend }}</li>
+  </ul>
+  <app-chart
+    [options]="options()"
+    [description]="ui.profile.chartDescription"
+    height="clamp(24rem, 55vh, 36rem)"
+  />
+  <p class="caption">{{ dayCounts() }}. {{ ui.profile.caption }}</p>
+</div>
+<p class="footnote">{{ footnote() }}</p>

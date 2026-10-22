@@ -1,0 +1,43 @@
+.bar {
+  height: 0.5rem;
+  background: var(--color-surface);
+  margin-top: var(--space-2);
+}
+
+.fill {
+  height: 100%;
+  background: var(--color-navy);
+}
+
+.section {
+  font-size: 1.125rem;
+  margin: 0 0 var(--space-2);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: var(--rule);
+}
+
+th {
+  border-bottom: var(--rule-strong);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.notice {
+  color: var(--color-text-secondary);
+}

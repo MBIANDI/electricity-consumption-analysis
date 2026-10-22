@@ -1,0 +1,48 @@
+<app-view-header [title]="title()" />
+
+<div class="controls card">
+  <div class="toggle" role="group" [attr.aria-label]="ui.granularity">
+    <button
+      type="button"
+      [attr.aria-pressed]="granularity() === 'daily'"
+      (click)="setGranularity('daily')"
+    >
+      {{ ui.daily }}
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="granularity() === 'hourly'"
+      (click)="setGranularity('hourly')"
+    >
+      {{ ui.hourly }}
+    </button>
+  </div>
+  <label>
+    {{ ui.from }}
+    <input
+      type="date"
+      [value]="rangeStart()"
+      [min]="firstDay()"
+      [max]="rangeEnd()"
+      (change)="setStart($event)"
+    />
+  </label>
+  <label>
+    {{ ui.to }}
+    <input
+      type="date"
+      [value]="rangeEnd()"
+      [min]="rangeStart()"
+      [max]="lastDay()"
+      (change)="setEnd($event)"
+    />
+  </label>
+  <button type="button" class="link" (click)="resetRange()">{{ ui.wholePeriod }}</button>
+</div>
+
+@if (isEmptyRange()) {
+  <p class="notice">{{ ui.emptyRange }}</p>
+} @else {
+  <div class="card"><app-chart [options]="options()" [description]="chartDescription()" /></div>
+}
+<p class="footnote">{{ footnote() }}</p>

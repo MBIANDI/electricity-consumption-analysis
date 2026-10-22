@@ -1,0 +1,14 @@
+<main class="page">
+  <h1>{{ ui.appTitle }}</h1>
+  <nav class="actions" [attr.aria-label]="ui.navLabel">
+    @for (view of views; track view.path) {
+      <a class="button" [routerLink]="'/' + view.path">{{ view.label }}</a>
+    }
+  </nav>
+
+  @if (ready(); as data) {
+    <app-overview [data]="data" />
+  } @else {
+    <app-data-status />
+  }
+</main>

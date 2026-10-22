@@ -1,0 +1,14 @@
+<app-view-header [title]="title()" />
+<dl class="kpis card">
+  @for (kpi of kpis(); track kpi.label) {
+    <div class="kpi">
+      <dt>{{ kpi.label }}</dt>
+      <dd class="value">{{ kpi.value }}</dd>
+      <dd class="detail">{{ kpi.detail }}</dd>
+      @if (kpi.link; as link) {
+        <dd class="detail"><a [routerLink]="link.path">{{ link.label }}</a></dd>
+      }
+    </div>
+  }
+</dl>
+<p class="footnote">{{ footnote() }}</p>

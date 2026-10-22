@@ -1,0 +1,47 @@
+<app-view-header
+  [title]="title()"
+  [subtitle]="ui.subtitle"
+/>
+
+<div class="coverage card">
+  <span>{{ ui.coverageLabel }} <strong>{{ coverage() }}</strong></span>
+  <div class="bar" aria-hidden="true"><div class="fill" [style.width]="coverageWidth()"></div></div>
+</div>
+
+<section class="card">
+  <h3 class="section">{{ ui.dailyCoverageTitle }}</h3>
+  <app-chart
+    [options]="options()"
+    [description]="ui.dailyCoverageDescription"
+  />
+</section>
+
+<section class="card">
+<h3 class="section">{{ ui.gapsTitle(data().quality.gap_threshold_minutes) }}</h3>
+@if (rows().length === 0) {
+  <p class="notice">{{ ui.noGaps }}</p>
+} @else {
+  <table>
+    <caption class="visually-hidden">
+      {{ ui.gapsCaption }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">{{ ui.start }}</th>
+        <th scope="col">{{ ui.end }}</th>
+        <th scope="col" class="num">{{ ui.duration }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.start) {
+        <tr>
+          <td>{{ row.start }}</td>
+          <td>{{ row.end }}</td>
+          <td class="num">{{ row.duration }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}
+</section>
+<p class="footnote">{{ footnote() }}</p>

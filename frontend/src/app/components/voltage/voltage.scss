@@ -1,0 +1,138 @@
+.verdict-card {
+  .verdict {
+    margin: 0;
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+  }
+
+  .label {
+    margin-right: var(--space-2);
+    color: var(--color-text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+  }
+
+  .note {
+    margin: var(--space-2) 0 0;
+    max-width: 52rem;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+}
+
+.alert {
+  color: var(--color-alert);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-4);
+  margin: 0 0 var(--space-3);
+
+  dd {
+    margin: 0;
+  }
+
+  dt {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .value {
+    font-family: var(--font-title);
+    font-size: 2rem;
+    line-height: 1.2;
+    margin-top: var(--space-1);
+  }
+
+  .detail {
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    margin-top: var(--space-1);
+
+    .alert {
+      margin-right: var(--space-1);
+    }
+  }
+}
+
+.section {
+  font-size: 1.125rem;
+  margin: 0 0 var(--space-2);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  font-size: 0.875rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+}
+
+.sample {
+  display: inline-block;
+  width: 2rem;
+
+  &.mean {
+    border-top: 2px solid var(--color-navy);
+  }
+
+  &.band {
+    height: 0.75rem;
+    background: var(--color-navy);
+    opacity: 0.14;
+  }
+
+  &.limit {
+    border-top: 1px dashed var(--color-text-secondary);
+  }
+
+  &.nominal {
+    border-top: 1px solid var(--color-text-secondary);
+  }
+}
+
+.caption {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.notice {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: var(--rule);
+}
+
+th {
+  border-bottom: var(--rule-strong);
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: lining-nums tabular-nums;
+}
