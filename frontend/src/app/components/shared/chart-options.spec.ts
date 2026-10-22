@@ -5,7 +5,12 @@ import {
   hourlyEnergyOptions,
   profileOptions,
   profileTooltip,
+  voltageDetailFor,
+  voltageOptions,
+  voltageRows,
+  voltageTooltip,
 } from './chart-options';
+import { FULL_RANGE } from './chart-zoom';
 import { VALUE_AXIS_STYLE } from './chart-theme';
 import { CHART_COLORS } from './chart-theme';
 
@@ -135,5 +140,83 @@ describe('chart options', () => {
 
   it('formats y-axis ticks in fr-FR', () => {
     expect(VALUE_AXIS_STYLE.axisLabel.formatter(1.5)).toBe('1,5');
+  });
+
+  describe('voltage', () => {
+    const report = data.voltage;
+    interface Marker {
+      coord: [string, number];
+      symbol: string;
+      symbolRotate: number;
+      label: { show: boolean; formatter: string };
+    }
+    interface VoltageSeries {
+      id: string;
+      data: (number | null)[];
+      markPoint?: { data: Marker[] };
+      markLine?: { data: { yAxis: number; lineStyle: { type: string } }[] };
+      markArea?: { data: { yAxis: number }[][] };
+    }
+    const series = (detail: 'daily' | 'hourly'): Record<string, VoltageSeries> => {
+      const options = voltageOptions(report, detail, FULL_RANGE) as { series: VoltageSeries[] };
+      return Object.fromEntries(options.series.map((serie) => [serie.id, serie]));
+    };
+
+    it('plots the daily min–max band and mean over the whole period, in V', () => {
+      const { 'band-base': base, band, mean } = series('daily');
+
+      expect(base.data).toEqual([190.5, 226]);
+      expect(band.data).toEqual([45.5, 19.5]);
+      expect(mean.data).toEqual([228, 231]);
+    });
+
+    it('switches to the hourly detail when the window spans 10 days or less', () => {
+      expect(voltageDetailFor({ start: 0, end: 100 }, 46)).toBe('daily');
+      expect(voltageDetailFor({ start: 0, end: 21 }, 46)).toBe('hourly');
+      expect(series('hourly')['mean'].data).toEqual([226, 233]);
+      expect(voltageRows(report, 'hourly').map((row) => row.label)).toHaveLength(2);
+    });
+
+    it('draws the limits dashed, the nominal value solid and a tint for the range', () => {
+      const { mean } = series('daily');
+
+      expect(mean.markLine?.data.map((line) => [line.yAxis, line.lineStyle.type])).toEqual([
+        [198, 'dashed'],
+        [220, 'solid'],
+        [242, 'dashed'],
+      ]);
+      expect(mean.markArea?.data[0].map((edge) => edge.yAxis)).toEqual([198, 242]);
+    });
+
+    it('marks each excursion with its own shape and worst value', () => {
+      const { mean } = series('hourly');
+
+      const [below, above] = mean.markPoint?.data ?? [];
+      expect(below.coord[1]).toBe(190.5);
+      expect([below.symbol, below.symbolRotate]).toEqual(['triangle', 180]);
+      expect(below.label).toMatchObject({ show: true, formatter: '190,5 V' });
+      expect([above.symbol, above.symbolRotate]).toEqual(['triangle', 0]);
+      expect(above.label.formatter).toBe('245,5 V');
+    });
+
+    it('formats the tooltip in fr-FR, and says when there is no measurement', () => {
+      expect(voltageTooltip({ label: '13 sept.', min: 228, mean: 231.4, max: 236.2 })).toBe(
+        '13 sept. — Moyenne 231,4 V · Min. – max. 228,0 V – 236,2 V',
+      );
+      expect(voltageTooltip({ label: '14 sept.', min: null, mean: null, max: null })).toBe(
+        '14 sept. — Pas de mesure',
+      );
+    });
+
+    it('has a zoom slider and keeps the current window', () => {
+      const options = voltageOptions(report, 'daily', { start: 10, end: 30 }) as {
+        dataZoom: { type: string; start: number; end: number }[];
+      };
+
+      expect(options.dataZoom.map((zoom) => [zoom.type, zoom.start, zoom.end])).toEqual([
+        ['inside', 10, 30],
+        ['slider', 10, 30],
+      ]);
+    });
   });
 });

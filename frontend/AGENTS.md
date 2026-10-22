@@ -14,10 +14,11 @@ only services talk to the API. Interfaces in `models/` mirror the API schema.
 ## Views and routes (lazy-loaded standalone components, see `app.routes.ts`)
 | Path | View |
 |---|---|
-| `/` | Home: title, links to the three views, overview (KPIs) |
+| `/` | Home: title, links to the four views, overview (KPIs) |
 | `/consommation` | Daily / hourly energy |
 | `/profil-journalier` | Average daily profile, weekday vs weekend: peak cards, 25th–75th percentile band, base-load line, day counts, factual sentence |
 | `/qualite-des-donnees` | Coverage and gaps |
+| `/qualite-de-service` | Supply voltage against the client's 220 V ±10 % rule: verdict, KPIs, min–max band with zoom, excursions table |
 
 Any other path redirects to `/`. The three views share `PageLayout` (compact header with a link
 to `/` and the nav). UI strings live in `services/ui-strings.ts`; route paths and nav labels in
@@ -42,6 +43,9 @@ to `/` and the nav). UI strings live in `services/ui-strings.ts`; route paths an
 - Colours live in `styles/_tokens.scss` only. The one exception is `components/shared/chart-theme.ts`
   (canvas cannot read CSS variables); keep the two in sync. Secondary text must reach AA (4.5:1) on
   both the sky background and white.
+- `--color-alert` is the only alert colour: out-of-range voltage values only, always paired with a marker
+  shape (▽ below, △ above) or a text. The limits (198/242 V, 220 V) are read from `voltage.settings` in
+  `dashboard.json`, never hardcoded. Never claim legal or EN 50160 compliance in the UI.
 - Accent blue is for hover, focus and the key insight; never decorative.
 - Georgia headings and KPI values use lining figures (`font-variant-numeric: lining-nums`, set on `body`).
 - A number and its unit are separated by a no-break space (U+00A0), and "week-end" is written with a

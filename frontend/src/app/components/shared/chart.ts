@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type { EChartsCoreOption } from 'echarts/core';
 import { NgxEchartsDirective } from 'ngx-echarts';
+import { toZoomRange, ZoomRange } from './chart-zoom';
 
 /** Thin wrapper over ECharts so views never touch the chart library directly. */
 @Component({
@@ -15,6 +16,7 @@ import { NgxEchartsDirective } from 'ngx-echarts';
     [options]="options()"
     [style.height]="height()"
     [autoResize]="true"
+    (chartDataZoom)="onZoom($event)"
   ></div>`,
   styles: `
     :host {
@@ -31,4 +33,13 @@ export class Chart {
   readonly description = input.required<string>();
   /** CSS height of the plot area. */
   readonly height = input('22rem');
+  /** Emits the visible window when the user zooms or pans (charts with a `dataZoom`). */
+  readonly zoomChange = output<ZoomRange>();
+
+  protected onZoom(event: unknown): void {
+    const range = toZoomRange(event);
+    if (range !== undefined) {
+      this.zoomChange.emit(range);
+    }
+  }
 }

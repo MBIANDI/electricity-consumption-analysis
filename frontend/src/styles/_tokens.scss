@@ -10,6 +10,9 @@
   --color-surface: #f3f5f7;
   --color-white: #ffffff;
   --color-sky: #dceefa;
+  // The only alert colour (AA on white and on the sky background). Out-of-range values only,
+  // always paired with a marker shape or a text.
+  --color-alert: #b3261e;
 
   --font-title: Georgia, 'Times New Roman', serif;
   --font-body: Arial, Helvetica, sans-serif;

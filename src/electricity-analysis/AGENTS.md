@@ -16,4 +16,6 @@ Shared rules are in the root `AGENTS.md`; this file only adds folder-specific on
 - A DataFrame never crosses a function boundary; public functions return Pydantic models.
 - Changing a model in `models/dashboard.py` means updating the frontend interfaces in
   `frontend/src/app/models/` (the exported `dashboard.schema.json` is the reference).
+- The voltage rule (nominal 220 V, ±10 %) is `AnalysisSettings.voltage`; see "Supply voltage" in the
+  definitions. It is a minute-by-minute check, not EN 50160.
 - Test fixtures are synthetic: JSON files or builders in `tests/fixtures/`. Never real data.

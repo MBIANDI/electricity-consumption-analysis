@@ -1,0 +1,80 @@
+<app-view-header [title]="title()" />
+
+<div class="card verdict-card">
+  <p class="verdict" [class.alert]="!isCompliant()">
+    <span class="label">{{ ui.verdictLabel }} :</span>
+    <strong><span aria-hidden="true">{{ isCompliant() ? '✓' : '✕' }}</span> {{ verdict() }}</strong>
+  </p>
+  <p class="note">{{ note() }}</p>
+</div>
+
+<dl class="kpis card">
+  @for (kpi of kpis(); track kpi.label) {
+    <div class="kpi">
+      <dt>{{ kpi.label }}</dt>
+      <dd class="value" [class.alert]="kpi.marker !== undefined">{{ kpi.value }}</dd>
+      <dd class="detail">
+        @if (kpi.marker) {
+          <span class="alert" aria-hidden="true">{{ kpi.marker }}</span>
+        }
+        {{ kpi.detail }}
+      </dd>
+    </div>
+  }
+</dl>
+
+<section class="card">
+  <h3 class="section">{{ ui.chartTitle }}</h3>
+  <ul class="legend" [attr.aria-label]="ui.legendLabel">
+    <li><span class="sample mean" aria-hidden="true"></span>{{ ui.legendMean }}</li>
+    <li><span class="sample band" aria-hidden="true"></span>{{ ui.legendBand }}</li>
+    <li><span class="sample limit" aria-hidden="true"></span>{{ ui.legendLimit }}</li>
+    <li><span class="sample nominal" aria-hidden="true"></span>{{ ui.legendNominal }}</li>
+    <li><span class="alert" aria-hidden="true">{{ markers.below }}</span>{{ ui.legendBelow }}</li>
+    <li><span class="alert" aria-hidden="true">{{ markers.above }}</span>{{ ui.legendAbove }}</li>
+  </ul>
+  <app-chart
+    [options]="options()"
+    [description]="ui.chartDescription"
+    height="clamp(24rem, 55vh, 34rem)"
+    (zoomChange)="onZoom($event)"
+  />
+  <p class="caption">{{ ui.zoomHint }}</p>
+</section>
+
+<section class="card">
+  <h3 class="section">{{ ui.excursionsTitle }}</h3>
+  @if (rows().length === 0) {
+    <p class="notice">{{ ui.none }}</p>
+  } @else {
+    <table>
+      <caption class="visually-hidden">
+        {{ ui.excursionsCaption }}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">{{ ui.start }}</th>
+          <th scope="col">{{ ui.end }}</th>
+          <th scope="col" class="num">{{ ui.duration }}</th>
+          <th scope="col">{{ ui.direction }}</th>
+          <th scope="col" class="num">{{ ui.worst }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.start + row.direction) {
+          <tr>
+            <td>{{ row.start }}</td>
+            <td>{{ row.end }}</td>
+            <td class="num">{{ row.duration }}</td>
+            <td>
+              <span class="alert" aria-hidden="true">{{ markers[row.direction] }}</span>
+              {{ row.directionLabel }}
+            </td>
+            <td class="num alert">{{ row.worst }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
+<p class="footnote">{{ footnote() }}</p>

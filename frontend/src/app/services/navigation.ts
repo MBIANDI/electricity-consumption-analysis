@@ -6,9 +6,10 @@ export interface ViewLink {
   label: string;
 }
 
-/** The three data views, in navigation order. Home is the `''` route. */
+/** The four data views, in navigation order. Home is the `''` route. */
 export const VIEWS: readonly ViewLink[] = [
   { path: 'consommation', label: UI.views.consumption },
   { path: 'profil-journalier', label: UI.views.profile },
   { path: 'qualite-des-donnees', label: UI.views.quality },
+  { path: 'qualite-de-service', label: UI.views.voltage },
 ];

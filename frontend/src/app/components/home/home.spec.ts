@@ -4,7 +4,7 @@ import { provideReadyDashboard } from '../../testing/dashboard-testing';
 import { Home } from './home';
 
 describe('Home', () => {
-  it('renders the h1, three view links and the overview', () => {
+  it('renders the h1, four view links and the overview', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), provideReadyDashboard()] });
     const fixture = TestBed.createComponent(Home);
     fixture.detectChanges();
@@ -16,7 +16,8 @@ describe('Home', () => {
       ['Consommation', '/consommation'],
       ['Profil journalier', '/profil-journalier'],
       ['Qualité des données', '/qualite-des-donnees'],
+      ['Qualité de service', '/qualite-de-service'],
     ]);
-    expect(element.querySelectorAll('app-overview dt')).toHaveLength(5);
+    expect(element.querySelectorAll('app-overview dt')).toHaveLength(6);
   });
 });

@@ -37,6 +37,11 @@ export function formatKwDelta(value: number, fractionDigits = 1): string {
   return `${signed}${NBSP}kW`;
 }
 
+/** `231,4 V` */
+export function formatVolts(value: number, fractionDigits = 1): string {
+  return `${number(value, fractionDigits)}${NBSP}V`;
+}
+
 export function formatWatts(value: number): string {
   return `${number(value, 0)}${NBSP}W`;
 }

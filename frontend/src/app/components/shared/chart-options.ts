@@ -6,6 +6,8 @@ import {
   DailyProfile,
   HourlyEnergyPoint,
   ProfilePoint,
+  VoltageExcursion,
+  VoltageQualityReport,
 } from '@models/dashboard';
 import {
   formatDayShort,
@@ -14,7 +16,9 @@ import {
   formatKw,
   formatKwh,
   formatPercent,
+  formatVolts,
   formatWatts,
+  localDayKey,
   wattsToKilowatts,
 } from '@services/format';
 import { peakOf } from '@services/insights';
@@ -25,7 +29,9 @@ import {
   CHART_FONT,
   TOOLTIP_STYLE,
   VALUE_AXIS_STYLE,
+  ZOOM_SLIDER_STYLE,
 } from './chart-theme';
+import { ZoomRange } from './chart-zoom';
 
 const GRID = { left: 56, right: 24, top: 32, bottom: 36 };
 const COMPLETE_DAY_COVERAGE_PCT = 95;
@@ -300,6 +306,177 @@ export function dailyCoverageOptions(days: readonly DailyEnergyPoint[]): ECharts
             color: coverage(day) < COMPLETE_DAY_COVERAGE_PCT ? CHART_COLORS.blue : CHART_COLORS.navy,
           },
         })),
+      },
+    ],
+  };
+}
+
+/** `daily`: one point per day over the whole period; `hourly`: the detail shown when zoomed in. */
+export type VoltageDetail = 'daily' | 'hourly';
+
+/** One category of the voltage chart, whatever the detail. `null` values mean no measurement. */
+export interface VoltageRow {
+  label: string;
+  min: number | null;
+  mean: number | null;
+  max: number | null;
+}
+
+const MS_PER_HOUR = 3_600_000;
+/** Zoomed-in windows of at most this many days switch to the hourly detail. */
+const HOURLY_DETAIL_MAX_DAYS = 10;
+
+export function voltageRows(report: VoltageQualityReport, detail: VoltageDetail): VoltageRow[] {
+  return detail === 'daily'
+    ? report.daily.map((day) => ({
+        label: formatDayShort(day.day),
+        min: day.min_v,
+        mean: day.mean_v,
+        max: day.max_v,
+      }))
+    : report.hourly.map((hour) => ({
+        label: formatHourLabel(hour.start_utc),
+        min: hour.min_v,
+        mean: hour.mean_v,
+        max: hour.max_v,
+      }));
+}
+
+/** Daily detail over the whole period, hourly detail once the window spans a few days only. */
+export function voltageDetailFor(range: ZoomRange, totalDays: number): VoltageDetail {
+  return ((range.end - range.start) / 100) * totalDays <= HOURLY_DETAIL_MAX_DAYS ? 'hourly' : 'daily';
+}
+
+/** `13 sept., 09:43 — Moyenne 231,4 V · Min. – max. 228,0 – 236,2 V`, or "no measurement". */
+export function voltageTooltip(row: VoltageRow | undefined): string {
+  if (row === undefined) {
+    return '';
+  }
+  if (row.mean === null || row.min === null || row.max === null) {
+    return `${row.label} — ${UI.voltage.noMeasure}`;
+  }
+  return (
+    `${row.label} — ${UI.voltage.tooltipMean} ${formatVolts(row.mean)}` +
+    ` · ${UI.voltage.tooltipRange} ${formatVolts(row.min)} – ${formatVolts(row.max)}`
+  );
+}
+
+/** Label of the category an excursion belongs to: its Paris day, or its hour when zoomed in. */
+function excursionLabel(excursion: VoltageExcursion, detail: VoltageDetail): string {
+  if (detail === 'daily') {
+    return formatDayShort(localDayKey(excursion.start_local));
+  }
+  const hourStart = Math.floor(Date.parse(excursion.start_local) / MS_PER_HOUR) * MS_PER_HOUR;
+  return formatHourLabel(new Date(hourStart).toISOString());
+}
+
+/**
+ * Supply voltage over the period: a min–max band and the mean line, the 198 V / 242 V limits
+ * (dashed), the nominal value (solid), a tint for the compliant range and one marker per excursion
+ * (inverted triangle below, triangle above) labelled with its worst value. The slider and mouse
+ * wheel zoom; the component swaps to the hourly detail when the window is a few days wide.
+ */
+export function voltageOptions(
+  report: VoltageQualityReport,
+  detail: VoltageDetail,
+  zoom: ZoomRange,
+): EChartsCoreOption {
+  const { settings, summary } = report;
+  const rows = voltageRows(report, detail);
+  const spread = rows.map((row) => (row.max === null || row.min === null ? null : row.max - row.min));
+  const hidden = { silent: true, showSymbol: false, symbol: 'none', lineStyle: { opacity: 0 } };
+  const limitLine = (value: number, type: 'dashed' | 'solid'): object => ({
+    yAxis: value,
+    lineStyle: { type, color: CHART_COLORS.textSecondary, width: 1 },
+    label: {
+      formatter: formatVolts(value, 0),
+      position: 'insideStartTop',
+      color: CHART_COLORS.textSecondary,
+      fontFamily: CHART_FONT,
+      fontSize: 12,
+    },
+  });
+  // In the overview only the worst excursion of each direction is labelled, to stay legible.
+  const worst = (direction: 'below' | 'above'): VoltageExcursion | undefined =>
+    peakOf(
+      report.excursions.filter((excursion) => excursion.direction === direction),
+      (excursion) => (direction === 'below' ? -excursion.worst_value_v : excursion.worst_value_v),
+    );
+  const labelled = new Set([worst('below'), worst('above')]);
+  const markers = report.excursions.map((excursion) => {
+    const below = excursion.direction === 'below';
+    return {
+      coord: [excursionLabel(excursion, detail), excursion.worst_value_v],
+      symbol: 'triangle',
+      symbolRotate: below ? 180 : 0,
+      symbolSize: 11,
+      itemStyle: { color: CHART_COLORS.alert },
+      label: {
+        show: detail === 'hourly' || labelled.has(excursion),
+        formatter: formatVolts(excursion.worst_value_v),
+        position: below ? 'bottom' : 'top',
+        color: CHART_COLORS.alert,
+        fontFamily: CHART_FONT,
+        fontWeight: 'bold',
+        fontSize: 12,
+      },
+    };
+  });
+  // Axis bounds on multiples of 5 V, a little beyond the data and the limits.
+  const lower = Math.floor((Math.min(summary.min_v, settings.lower_v) - 2) / 5) * 5;
+  const upper = Math.ceil((Math.max(summary.max_v, settings.upper_v) + 2) / 5) * 5;
+  return {
+    animation: false,
+    grid: { ...GRID, right: 16, bottom: 76 },
+    tooltip: {
+      ...TOOLTIP_STYLE,
+      axisPointer: { type: 'line', lineStyle: { color: CHART_COLORS.navy, width: 1, type: 'solid' } },
+      formatter: (items: { dataIndex: number }[]): string => voltageTooltip(rows[items[0]?.dataIndex ?? -1]),
+    },
+    xAxis: {
+      ...CATEGORY_AXIS_STYLE,
+      boundaryGap: false,
+      data: rows.map((row) => row.label),
+      axisLabel: { ...CATEGORY_AXIS_STYLE.axisLabel, hideOverlap: true },
+    },
+    yAxis: { ...VALUE_AXIS_STYLE, name: 'V', min: lower, max: upper },
+    dataZoom: [
+      { id: 'zoom-inside', type: 'inside', start: zoom.start, end: zoom.end },
+      { id: 'zoom-slider', type: 'slider', start: zoom.start, end: zoom.end, height: 28, bottom: 12, ...ZOOM_SLIDER_STYLE },
+    ],
+    series: [
+      { ...hidden, id: 'band-base', type: 'line', stack: 'band', data: rows.map((row) => row.min) },
+      {
+        ...hidden,
+        id: 'band',
+        type: 'line',
+        stack: 'band',
+        areaStyle: { color: CHART_COLORS.navy, opacity: 0.14 },
+        data: spread,
+      },
+      {
+        id: 'mean',
+        name: UI.voltage.legendMean,
+        type: 'line',
+        showSymbol: false,
+        lineStyle: { color: CHART_COLORS.navy, width: 1.5 },
+        itemStyle: { color: CHART_COLORS.navy },
+        data: rows.map((row) => row.mean),
+        markArea: {
+          silent: true,
+          itemStyle: { color: CHART_COLORS.blueTint, opacity: 0.35 },
+          data: [[{ yAxis: settings.lower_v }, { yAxis: settings.upper_v }]],
+        },
+        markLine: {
+          silent: true,
+          symbol: 'none',
+          data: [
+            limitLine(settings.lower_v, 'dashed'),
+            limitLine(settings.nominal_v, 'solid'),
+            limitLine(settings.upper_v, 'dashed'),
+          ],
+        },
+        markPoint: { data: markers },
       },
     ],
   };

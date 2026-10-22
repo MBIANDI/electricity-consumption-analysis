@@ -8,6 +8,7 @@ import {
   formatKwh,
   formatNumber,
   formatPercent,
+  formatVolts,
   formatWatts,
   localDayKey,
   wattsToKilowatts,
@@ -35,6 +36,11 @@ describe('format', () => {
   it('puts a no-break space between a number and its unit', () => {
     expect(formatKw(1.7)).toBe('1,7\u00a0kW');
     expect(formatHour(6)).toBe('6\u00a0h');
+  });
+
+  it('formats volts in fr-FR with a no-break space', () => {
+    expect(formatVolts(231.4)).toBe('231,4 V');
+    expect(formatVolts(198, 0)).toBe('198 V');
   });
 
   it('converts watts to kilowatts', () => {

@@ -19,6 +19,6 @@ describe('PageLayout', () => {
 
     const current = Array.from(element.querySelectorAll('nav a[aria-current="page"]'));
     expect(current.map((link) => link.textContent)).toEqual(['Profil journalier']);
-    expect(element.querySelectorAll('nav a')).toHaveLength(3);
+    expect(element.querySelectorAll('nav a')).toHaveLength(4);
   });
 });

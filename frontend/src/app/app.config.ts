@@ -3,7 +3,10 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideRouter } from '@angular/router';
 import { BarChart, LineChart } from 'echarts/charts';
 import {
+  DataZoomComponent,
   GridComponent,
+  MarkAreaComponent,
+  MarkLineComponent,
   MarkPointComponent,
   TooltipComponent,
 } from 'echarts/components';
@@ -12,7 +15,17 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { provideEchartsCore } from 'ngx-echarts';
 import { routes } from './app.routes';
 
-echarts.use([BarChart, LineChart, GridComponent, MarkPointComponent, TooltipComponent, CanvasRenderer]);
+echarts.use([
+  BarChart,
+  LineChart,
+  DataZoomComponent,
+  GridComponent,
+  MarkAreaComponent,
+  MarkLineComponent,
+  MarkPointComponent,
+  TooltipComponent,
+  CanvasRenderer,
+]);
 
 export const appConfig: ApplicationConfig = {
   providers: [

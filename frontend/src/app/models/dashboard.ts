@@ -103,6 +103,92 @@ export interface DataQuality {
   gaps: DataGap[];
 }
 
+export interface VoltageSettings {
+  /** Nominal voltage, in V. */
+  nominal_v: number;
+  /** Tolerance around the nominal value, in percent. */
+  tolerance_pct: number;
+  /** Out-of-range runs of one direction separated by fewer minutes are merged. */
+  excursion_merge_minutes: number;
+  /** Lower limit, in V. A voltage equal to it is compliant. */
+  lower_v: number;
+  /** Upper limit, in V. A voltage equal to it is compliant. */
+  upper_v: number;
+}
+
+export interface VoltageSummary {
+  /** Lowest minute voltage, in V. */
+  min_v: number;
+  /** Highest minute voltage, in V. */
+  max_v: number;
+  /** Mean minute voltage, in V. */
+  mean_v: number;
+  /** Minutes with a usable voltage (above 0 V). */
+  measured_minutes: number;
+  /** Minutes between the first and last reading without a usable voltage. */
+  missing_minutes: number;
+  /** Measured over expected minutes, in percent. */
+  coverage_pct: number;
+  /** Measured minutes strictly below the lower limit. */
+  time_below_range_min: number;
+  /** Measured minutes strictly above the upper limit. */
+  time_above_range_min: number;
+  /** Measured minutes within the limits (inclusive), in percent of measured ones. */
+  pct_time_in_range: number;
+  /** Number of excursions, after merging close runs. */
+  excursion_count: number;
+  /** True when no measured minute is out of range. */
+  is_compliant: boolean;
+}
+
+export interface VoltageDailyPoint {
+  /** Local calendar day. */
+  day: string;
+  /** Lowest minute voltage of the day, in V; `null` on a day without measurement. */
+  min_v: number | null;
+  mean_v: number | null;
+  max_v: number | null;
+  /** Minutes with a usable voltage in the day. */
+  measured_minutes: number;
+  /** Measured minutes outside the limits. */
+  minutes_out_of_range: number;
+}
+
+export interface VoltageHourlyPoint {
+  /** Start of the hour, in UTC. */
+  start_utc: string;
+  min_v: number;
+  mean_v: number;
+  max_v: number;
+}
+
+export type VoltageDirection = 'below' | 'above';
+
+export interface VoltageExcursion {
+  /** First out-of-range minute, in Europe/Paris. */
+  start_local: string;
+  /** Last out-of-range minute, in Europe/Paris. */
+  end_local: string;
+  /** Minutes from the first to the last out-of-range minute. */
+  duration_min: number;
+  /** Out-of-range measured minutes in the excursion. */
+  out_of_range_minutes: number;
+  direction: VoltageDirection;
+  /** Lowest (below) or highest (above) voltage, in V. */
+  worst_value_v: number;
+}
+
+export interface VoltageQualityReport {
+  settings: VoltageSettings;
+  summary: VoltageSummary;
+  /** One point per local day, chronological. */
+  daily: VoltageDailyPoint[];
+  /** Chronological. */
+  excursions: VoltageExcursion[];
+  /** Downsampled series, one point per hour. */
+  hourly: VoltageHourlyPoint[];
+}
+
 export interface DashboardData {
   source: SourceInfo;
   summary: ConsumptionSummary;
@@ -110,6 +196,7 @@ export interface DashboardData {
   daily: DailyEnergyPoint[];
   daily_profile: DailyProfile;
   quality: DataQuality;
+  voltage: VoltageQualityReport;
 }
 
 /** What the UI can be showing while `dashboard.json` is being obtained. */

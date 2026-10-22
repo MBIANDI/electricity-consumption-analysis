@@ -27,6 +27,7 @@ describe('routes', () => {
     ['/consommation', 'app-consumption'],
     ['/profil-journalier', 'app-profile'],
     ['/qualite-des-donnees', 'app-quality'],
+    ['/qualite-de-service', 'app-voltage'],
   ])('shows the view for %s inside the page layout', async (url, selector) => {
     await harness.navigateByUrl(url);
 

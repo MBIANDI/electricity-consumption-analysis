@@ -2,7 +2,7 @@
 
 Reads minute-level electricity data from a Shelly Pro 3EM meter, analyses it with Python and
 shows the results in an Angular dashboard (home with overview, consumption over time, average daily
-profile, data quality).
+profile, data quality, supply-voltage quality).
 
 ## Prerequisites
 - [uv](https://docs.astral.sh/uv/) (Python 3.13 is picked from `.python-version`)

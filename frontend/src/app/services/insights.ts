@@ -8,6 +8,8 @@ import {
   HourlyEnergyPoint,
   ProfilePoint,
   SourceInfo,
+  VoltageQualityReport,
+  VoltageSettings,
 } from '@models/dashboard';
 import {
   formatDateTime,
@@ -16,9 +18,11 @@ import {
   formatHour,
   formatKw,
   formatKwDelta,
+  formatNumber,
   formatKwh,
   formatPercent,
   formatPeriod,
+  formatVolts,
   wattsToKilowatts,
 } from './format';
 import { UI } from './ui-strings';
@@ -94,6 +98,24 @@ export function profileInsight(profile: DailyProfile): string | undefined {
   return (
     `À ${formatHour(peak.hour)}, la puissance moyenne est de ${formatKw(weekdayKw)} en semaine ` +
     `contre ${formatKw(weekendKw)} le ${UI.weekend.toLowerCase()} : ${formatKwDelta(gap)}.`
+  );
+}
+
+/** `198 à 242 V` */
+export function voltageRangeText(settings: VoltageSettings): string {
+  return `${formatNumber(settings.lower_v)} à ${formatVolts(settings.upper_v, 0)}`;
+}
+
+export function voltageTitle(report: VoltageQualityReport): string {
+  const { summary, settings } = report;
+  const range = voltageRangeText(settings);
+  if (summary.is_compliant) {
+    return `La tension est restée dans la plage de ${range} pendant toute la période mesurée.`;
+  }
+  const count = summary.excursion_count;
+  return (
+    `La tension est sortie de la plage de ${range} à ${count} ${count > 1 ? 'reprises' : 'reprise'} ; ` +
+    `elle y est restée ${formatPercent(summary.pct_time_in_range, 2)} du temps mesuré.`
   );
 }
 

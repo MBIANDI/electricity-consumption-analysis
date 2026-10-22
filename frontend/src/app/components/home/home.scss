@@ -7,12 +7,16 @@ h1 {
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-3);
-  max-width: 44rem;
+  max-width: 60rem;
   margin: var(--space-4) 0 var(--space-5);
 
-  @media (max-width: 40rem) {
+  @media (max-width: 56rem) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 32rem) {
     grid-template-columns: 1fr;
   }
 }

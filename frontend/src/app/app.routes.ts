@@ -27,6 +27,11 @@ export const routes: Routes = [
         title: `${UI.views.quality} — ${UI.appTitle}`,
         loadComponent: () => import('@components/quality/quality').then((m) => m.Quality),
       },
+      {
+        path: 'qualite-de-service',
+        title: `${UI.views.voltage} — ${UI.appTitle}`,
+        loadComponent: () => import('@components/voltage/voltage').then((m) => m.Voltage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

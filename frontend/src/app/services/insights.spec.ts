@@ -1,4 +1,4 @@
-import { makeDashboard } from '../testing/dashboard-fixture';
+import { makeCompliantVoltage, makeDashboard } from '../testing/dashboard-fixture';
 import {
   dailyConsumptionTitle,
   hourlyConsumptionTitle,
@@ -8,6 +8,7 @@ import {
   profileTitle,
   qualityTitle,
   sourceFootnote,
+  voltageTitle,
 } from './insights';
 
 const plain = (text: string): string => text.replace(/\s/g, ' ');
@@ -102,5 +103,19 @@ describe('insights', () => {
 
   it('has no insight when the weekend has no reading at the weekday peak hour', () => {
     expect(profileInsight(data.daily_profile)).toBeUndefined();
+  });
+
+  it('states that the voltage left the range, with the number of excursions', () => {
+    expect(voltageTitle(data.voltage)).toBe(
+      'La tension est sortie de la plage de 198 à 242 V à 2 reprises ; elle y est restée 99,50 % du temps mesuré.',
+    );
+    const single = { ...data.voltage, summary: { ...data.voltage.summary, excursion_count: 1 } };
+    expect(voltageTitle(single)).toContain('à 1 reprise ;');
+  });
+
+  it('states that the voltage stayed in the range', () => {
+    expect(voltageTitle(makeCompliantVoltage())).toBe(
+      'La tension est restée dans la plage de 198 à 242 V pendant toute la période mesurée.',
+    );
   });
 });
